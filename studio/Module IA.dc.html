@@ -528,6 +528,15 @@ input:focus,textarea:focus{outline:none;border-color:#8c52ff !important;}
 
         <div style="margin-top:18px;padding-top:18px;border-top:1px solid #F0EBF7;">
           <div style="font-size:13px;font-weight:600;letter-spacing:0.04em;color:#9a93ab;text-transform:uppercase;margin-bottom:12px;">Récupérer ton produit</div>
+          <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+              <span style="font-size:14px;color:#8b8499;font-weight:500;">Format du PDF :</span>
+              <div style="display:inline-flex;background:#F4EEFF;border:1px solid #e6d8ff;border-radius:11px;padding:3px;gap:3px;">
+                <div onClick="{{ onPortrait }}" style="{{ portraitStyle }}">📄 Portrait</div>
+                <div onClick="{{ onLandscape }}" style="{{ landscapeStyle }}">🖼️ Paysage</div>
+              </div>
+            </div>
+          </sc-if>
           <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
             <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ true }}">
               <div onClick="{{ onDownloadPdf }}" style="background:#8c52ff;color:#fff;font-weight:700;font-size:16px;padding:14px 24px;border-radius:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 22px rgba(140,82,255,0.28);" style-hover="background:#7a3fe0;">📄 Télécharger en PDF</div>
@@ -556,7 +565,8 @@ class Component extends DCLogic {
     assistInput: '', assistReply: '', assistLoading: false,
     fileStatus: '', fileStatusColor: '#1f9d6b',
     email: '', emailInput: '', emailError: '', emailChecking: false,
-    serverRemaining: null, serverLimit: null
+    serverRemaining: null, serverLimit: null,
+    pdfOrient: 'portrait'
   };
 
   componentDidMount() {
@@ -912,6 +922,8 @@ Consigne de structure : ${this.blockSchemaHint()}
 
 INTERACTIVITÉ (priorité absolue) : ce studio crée des produits numériques INTERACTIFS. Dès que c'est pertinent, ajoute des éléments où la cliente AGIT — champs "exercice" à remplir, "checklist" à cocher, "tracker" à compléter, "saisie"+formule à calculer. Évite un produit 100% texte à lire ; vise au moins 2 blocs interactifs.
 
+PRIX (très important) : propose un prix ACCESSIBLE et honnête, jamais surévalué. Repères réalistes du marché francophone des produits numériques d'entrepreneures : checklist / template simple 5–12 €, tracker / planner 7–15 €, ebook / guide 9–19 €, workbook complet 12–25 €, mini-formation 19–39 €. Reste plutôt dans le BAS de ces fourchettes. N'inscris JAMAIS un prix au-dessus de ces repères. Format du prix : un seul nombre clair (ex. "12 €"), ou une petite fourchette resserrée (ex. "9–14 €").
+
 Réponds UNIQUEMENT avec un objet JSON valide (aucun texte avant/après, pas de markdown), schéma EXACT :
 {"titre":string,"sousTitre":string,"promesse":string,"format":string,"prix":string,"blocs":[{"type":"intro|section|exercice|checklist|tracker|saisie|cta|citation","titre":string,"texte":string,"points":[string],"items":[string],"champs":[string],"colonnes":[string],"lignes":[string],"resultat":string,"formule":string,"bouton":string}]}
 
@@ -976,10 +988,15 @@ Règles : n'inclus dans chaque bloc QUE les champs utiles à son type (les autre
     return u;
   }
 
+  _suggestedPrice(fam) {
+    const map = { checklist: '7–12 €', tracker: '9–15 €', workbook: '14–25 €', calculator: '9–15 €', sales: '12–19 €', offer: '19–39 €' };
+    return map[fam] || '9–19 €';
+  }
+
   _fallback() {
     const a = this.state.answers, fam = this.family();
     const niche = this.effectiveNiche() || 'ton sujet';
-    const base = { titre: `${this.typeLabel()} : ${niche}`, sousTitre: `Un ${this.typeLabel().toLowerCase()} pensé pour ${a.audience || 'ta cliente idéale'}, ton ${(a.ton || 'chaleureux').toLowerCase()}.`, promesse: 'Un résultat concret, vite', format: a.type || 'Produit numérique', prix: a.objectif && a.objectif.indexOf('Attirer') === 0 ? 'Gratuit' : '47 € – 97 €' };
+    const base = { titre: `${this.typeLabel()} : ${niche}`, sousTitre: `Un ${this.typeLabel().toLowerCase()} pensé pour ${a.audience || 'ta cliente idéale'}, ton ${(a.ton || 'chaleureux').toLowerCase()}.`, promesse: 'Un résultat concret, vite', format: a.type || 'Produit numérique', prix: (a.objectif && a.objectif.indexOf('Attirer') === 0) ? 'Gratuit' : this._suggestedPrice(fam) };
     const blocsByFam = {
       tracker: [
         { type: 'intro', titre: 'Bienvenue', texte: 'Coche chaque jour, observe tes progrès, célèbre tes victoires.' },
@@ -1087,7 +1104,7 @@ Règles : n'inclus dans chaque bloc QUE les champs utiles à son type (les autre
     const accent = this.brandColor();
     const br = this.state.brand || {};
     const blocs = (p.blocs || []).map((b, i) => this._blocHTML(b, i)).join('');
-    const printCss = forPrint ? `@page{margin:12mm;} @media print{ body{padding:0;background:#fff;} .wrap{box-shadow:none;border:none;border-radius:0;} }` : '';
+    const printCss = forPrint ? `@page{size:${this.state.pdfOrient === 'landscape' ? 'landscape' : 'portrait'};margin:12mm;} @media print{ body{padding:0;background:#fff;} .wrap{box-shadow:none;border:none;border-radius:0;} }` : '';
     const calcScript = `(function(){function rc(){var L=document.querySelectorAll('[data-formula]');for(var n=0;n<L.length;n++){(function(res){var blk=res.getAttribute('data-block');var ins=[].slice.call(document.querySelectorAll('input.sai[data-block="'+blk+'"]'));ins.sort(function(a,b){return a.getAttribute('data-idx')-b.getAttribute('data-idx');});var vals=ins.map(function(i){return parseFloat(i.value)||0;});try{var names=vals.map(function(_,k){return 'c'+k;});var f=Function.apply(null,names.concat(['return ('+res.getAttribute('data-formula')+')']));var r=f.apply(null,vals);var out=res.querySelector('.resval');var any=ins.some(function(i){return String(i.value).trim()!=='';});if(out)out.textContent=(!any||!isFinite(r))?'\\u2014':new Intl.NumberFormat('fr-FR',{maximumFractionDigits:2}).format(Math.round(r*100)/100);}catch(ex){}})(L[n]);}}document.addEventListener('input',rc);rc();})();`;
     const persistScript = forPrint ? '' : `(function(){var KEY='produit_'+document.title;function save(){var d={};var els=document.querySelectorAll('[data-k]');for(var i=0;i<els.length;i++){var el=els[i];d[el.getAttribute('data-k')]=el.type==='checkbox'?el.checked:el.value;}try{localStorage.setItem(KEY,JSON.stringify(d));}catch(ex){}}function load(){try{var d=JSON.parse(localStorage.getItem(KEY)||'{}');var els=document.querySelectorAll('[data-k]');for(var i=0;i<els.length;i++){var el=els[i];var k=el.getAttribute('data-k');if(k in d){if(el.type==='checkbox')el.checked=d[k];else el.value=d[k];}}}catch(ex){}}load();document.addEventListener('input',save);document.addEventListener('change',save);})();`;
     const printScript = forPrint ? `window.onload=function(){setTimeout(function(){window.print();},350);};` : '';
@@ -1346,6 +1363,10 @@ Règles : n'inclus dans chaque bloc QUE les champs utiles à son type (les autre
       copyLabel: st.copied ? '✓ Copié !' : '⧉ Copier le texte',
       onDownloadPdf: () => this.downloadPDF(),
       onDownloadHtml: () => this.downloadHTML(),
+      onPortrait: () => this.setState({ pdfOrient: 'portrait' }),
+      onLandscape: () => this.setState({ pdfOrient: 'landscape' }),
+      portraitStyle: `font-size:14px;font-weight:600;padding:7px 14px;border-radius:9px;cursor:pointer;transition:all .15s;${st.pdfOrient === 'portrait' ? 'background:#8c52ff;color:#fff;' : 'background:transparent;color:#7a3fe0;'}`,
+      landscapeStyle: `font-size:14px;font-weight:600;padding:7px 14px;border-radius:9px;cursor:pointer;transition:all .15s;${st.pdfOrient === 'landscape' ? 'background:#8c52ff;color:#fff;' : 'background:transparent;color:#7a3fe0;'}`,
       showPdf: ['workbook', 'tracker', 'checklist'].includes(this.family()),
       htmlLabel: this.family() === 'calculator' ? '🖥️ Télécharger mon outil (.html)' : '🖥️ Version interactive (.html)',
       exportHint: this.family() === 'calculator'
