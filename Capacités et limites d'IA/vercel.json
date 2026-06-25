@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/Module%20IA.dc.html" }
+  ]
+}
