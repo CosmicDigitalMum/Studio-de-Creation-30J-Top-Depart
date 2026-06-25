@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800&family=Newsreader:ital,opsz,wght@0,18..72,400;0,18..72,500;1,18..72,400;1,18..72,500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#FBFAFF;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pop{0%{transform:translateY(14px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
+@keyframes pulse{0%,100%{opacity:.45;}50%{opacity:1;}}
+input:focus,textarea:focus{outline:none;border-color:#8c52ff !important;}
+::placeholder{color:#b3acc2;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+</helmet>
+
+<div style="min-height:100vh;font-family:'Poppins',sans-serif;color:#2E2A36;background:#FBFAFF;padding-bottom:90px;">
+
+  <!-- HEADER -->
+  <div style="background:linear-gradient(170deg,#ffffff 0%,#F6F0FF 100%);border-bottom:1px solid #F0EAFA;padding:36px 0 30px;">
+    <div style="max-width:1000px;margin:0 auto;padding:0 32px;">
+      <div style="display:flex;align-items:center;gap:13px;margin-bottom:30px;">
+        <div style="width:40px;height:40px;border-radius:11px;background:#8c52ff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;">30</div>
+        <div style="display:flex;flex-direction:column;line-height:1.1;">
+          <div style="font-weight:700;font-size:17px;letter-spacing:0.16em;color:#2E2A36;">TOP&nbsp;DÉPART</div>
+          <div style="font-size:12px;letter-spacing:0.22em;color:#a78bd6;font-weight:600;">STUDIO&nbsp;DE&nbsp;CRÉATION</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+          <sc-if value="{{ showCounter }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;background:#F4EEFF;border:1px solid #e6d8ff;color:#7a3fe0;font-weight:600;font-size:13px;padding:8px 14px;border-radius:999px;">
+              <div style="width:7px;height:7px;border-radius:50%;background:#8c52ff;"></div>
+              {{ counterText }}
+            </div>
+          </sc-if>
+          <sc-if value="{{ showResetCounter }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ onResetCounter }}" style="font-size:12px;color:#b3acc2;cursor:pointer;text-decoration:underline;" style-hover="color:#8c52ff;">réinitialiser (test)</div>
+          </sc-if>
+        </div>
+      </div>
+      <h1 style="font-size:40px;line-height:1.06;font-weight:800;letter-spacing:-0.02em;max-width:780px;">{{ headerTitle }}</h1>
+      <p style="font-family:'Newsreader',serif;font-size:22px;line-height:1.45;color:#5b5667;margin-top:12px;max-width:700px;">{{ headerSub }}</p>
+
+      <!-- STEP INDICATOR -->
+      <sc-if value="{{ showCounter }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;gap:10px;margin-top:26px;">
+        <sc-for list="{{ steps }}" as="st" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="{{ st.dotStyle }}">{{ st.num }}</div>
+            <div style="{{ st.labelStyle }}">{{ st.label }}</div>
+            <sc-if value="{{ st.showBar }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:2px;background:#e2d3ff;border-radius:2px;"></div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="max-width:1000px;margin:0 auto;padding:0 32px;">
+
+    <!-- ============ PORTE E-MAIL ============ -->
+    <sc-if value="{{ isEmailGate }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:40px;animation:pop .4s ease both;display:flex;justify-content:center;">
+      <div style="max-width:540px;width:100%;background:#fff;border:1px solid #EEE7F7;border-radius:24px;padding:46px 44px;box-shadow:0 16px 60px rgba(140,82,255,0.12);">
+        <div style="width:60px;height:60px;border-radius:18px;background:#F4EEFF;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:22px;">✉️</div>
+        <h2 style="font-size:28px;font-weight:800;letter-spacing:-0.01em;line-height:1.15;">Bienvenue dans ton studio de création</h2>
+        <p style="font-family:'Newsreader',serif;font-size:19px;line-height:1.5;color:#5b5667;margin-top:12px;">Entre ton e-mail pour commencer. Il me sert à garder tes créations en mémoire et à débloquer ton accès.</p>
+        <input type="email" value="{{ emailValue }}" oninput="{{ onEmailInput }}" placeholder="ton@email.com" style="width:100%;margin-top:22px;font-family:'Poppins',sans-serif;font-size:17px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:14px;padding:16px 18px;outline:none;" style-focus="border-color:#8c52ff;" />
+        <sc-if value="{{ hasEmailError }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:10px;font-size:14px;color:#d9534f;font-weight:500;">{{ emailError }}</div>
+        </sc-if>
+        <div onClick="{{ onEmailSubmit }}" style="margin-top:18px;text-align:center;background:#8c52ff;color:#fff;font-weight:700;font-size:18px;padding:16px 28px;border-radius:14px;cursor:pointer;box-shadow:0 10px 26px rgba(140,82,255,0.3);" style-hover="background:#7a3fe0;">{{ emailBtnLabel }} →</div>
+        <p style="font-size:13px;color:#b3acc2;margin-top:16px;line-height:1.5;">Ton e-mail reste confidentiel et n'est utilisé que pour ton accès au studio.</p>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ STEP 1 : CHOIX ============ -->
+    <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:22px;margin-top:34px;">
+
+      <!-- Q1 TYPE -->
+      <div style="background:#fff;border:1px solid #F0EBF7;border-radius:24px;padding:32px 34px;box-shadow:0 4px 24px rgba(140,82,255,0.05);">
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:#8c52ff;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;">1</div>
+          <h3 style="font-size:24px;font-weight:700;">Quel produit veux-tu créer&nbsp;?</h3>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px;">
+          <sc-for list="{{ typeList }}" as="opt" hint-placeholder-count="16">
+            <div onClick="{{ opt.onSelect }}" style="{{ opt.style }}" style-hover="border-color:#c6a8ff;">
+              <div style="font-size:17px;font-weight:600;line-height:1.2;">{{ opt.label }}</div>
+              <div style="font-size:13px;color:#8b8499;line-height:1.3;">{{ opt.desc }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Q2 NICHE -->
+      <div style="background:#fff;border:1px solid #F0EBF7;border-radius:24px;padding:32px 34px;box-shadow:0 4px 24px rgba(140,82,255,0.05);">
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:#8c52ff;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;">2</div>
+          <h3 style="font-size:24px;font-weight:700;">Dans quel univers&nbsp;?</h3>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;">
+          <sc-for list="{{ nicheList }}" as="opt" hint-placeholder-count="21">
+            <div onClick="{{ opt.onSelect }}" style="{{ opt.style }}" style-hover="border-color:#c6a8ff;">{{ opt.label }}</div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ showNicheAutre }}" hint-placeholder-val="{{ false }}">
+        <input type="text" oninput="{{ onNicheAutreInput }}" placeholder="Écris ton univers ici… (ex : couture créative, naturopathie, photographie)" style="width:100%;margin-top:16px;font-family:'Poppins',sans-serif;font-size:17px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:14px;padding:16px 20px;transition:border-color .15s;" />
+        </sc-if>
+      </div>
+
+      <!-- Q3 OBJECTIF -->
+      <div style="background:#fff;border:1px solid #F0EBF7;border-radius:24px;padding:32px 34px;box-shadow:0 4px 24px rgba(140,82,255,0.05);">
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:#8c52ff;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;">3</div>
+          <h3 style="font-size:24px;font-weight:700;">Quel est l'objectif&nbsp;?</h3>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px;">
+          <sc-for list="{{ objectifList }}" as="opt" hint-placeholder-count="7">
+            <div onClick="{{ opt.onSelect }}" style="{{ opt.style }}" style-hover="border-color:#c6a8ff;">
+              <div style="font-size:17px;font-weight:600;">{{ opt.label }}</div>
+              <div style="font-size:13px;color:#8b8499;line-height:1.3;">{{ opt.desc }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Q4 AVATAR CLIENT -->
+      <div style="background:#fff;border:1px solid #F0EBF7;border-radius:24px;padding:32px 34px;box-shadow:0 4px 24px rgba(140,82,255,0.05);">
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:#8c52ff;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;">4</div>
+          <h3 style="font-size:24px;font-weight:700;">À qui t'adresses-tu&nbsp;? <span style="font-weight:500;color:#a39bb5;font-size:16px;">— ton avatar client</span></h3>
+        </div>
+        <p style="font-size:15px;color:#8b8499;margin-top:9px;line-height:1.5;">Plus tu décris précisément ta cliente idéale, plus ton produit lui parlera. Seule la première ligne est nécessaire — mais chaque détail rend la création plus juste.</p>
+
+        <div style="margin-top:22px;">
+          <label style="font-size:15px;font-weight:600;color:#5b5667;">Qui est-elle&nbsp;?</label>
+          <input type="text" oninput="{{ onAudienceInput }}" placeholder="Ex : mamans débordées qui se lancent en ligne" style="width:100%;margin-top:8px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:12px;padding:14px 16px;transition:border-color .15s;outline:none;" style-focus="border-color:#c6a8ff;" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-top:18px;">
+          <div>
+            <label style="font-size:15px;font-weight:600;color:#5b5667;">Où en est-elle aujourd'hui&nbsp;? <span style="font-weight:500;color:#b3acc2;font-size:13px;">(optionnel)</span></label>
+            <input type="text" oninput="{{ onSituationInput }}" placeholder="Ex : grande débutante, jongle boulot + enfants" style="width:100%;margin-top:8px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:12px;padding:14px 16px;transition:border-color .15s;outline:none;" style-focus="border-color:#c6a8ff;" />
+          </div>
+          <div>
+            <label style="font-size:15px;font-weight:600;color:#5b5667;">Son plus gros défi&nbsp;? <span style="font-weight:500;color:#b3acc2;font-size:13px;">(optionnel)</span></label>
+            <input type="text" oninput="{{ onDefiInput }}" placeholder="Ex : manque de temps, se sent dépassée" style="width:100%;margin-top:8px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:12px;padding:14px 16px;transition:border-color .15s;outline:none;" style-focus="border-color:#c6a8ff;" />
+          </div>
+          <div>
+            <label style="font-size:15px;font-weight:600;color:#5b5667;">Ce qu'elle désire vraiment&nbsp;? <span style="font-weight:500;color:#b3acc2;font-size:13px;">(optionnel)</span></label>
+            <input type="text" oninput="{{ onDesirInput }}" placeholder="Ex : un revenu en plus, se sentir libre et fière" style="width:100%;margin-top:8px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:12px;padding:14px 16px;transition:border-color .15s;outline:none;" style-focus="border-color:#c6a8ff;" />
+          </div>
+          <div>
+            <label style="font-size:15px;font-weight:600;color:#5b5667;">Ce qui l'a freinée jusqu'ici&nbsp;? <span style="font-weight:500;color:#b3acc2;font-size:13px;">(optionnel)</span></label>
+            <input type="text" oninput="{{ onBlocageInput }}" placeholder="Ex : peur de se lancer, trouve ça trop technique" style="width:100%;margin-top:8px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:12px;padding:14px 16px;transition:border-color .15s;outline:none;" style-focus="border-color:#c6a8ff;" />
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <label style="font-size:15px;font-weight:600;color:#5b5667;">Sa tranche d'âge <span style="font-weight:500;color:#b3acc2;font-size:13px;">(optionnel)</span></label>
+          <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:11px;">
+            <sc-for list="{{ ageList }}" as="opt" hint-placeholder-count="4">
+              <div onClick="{{ opt.onSelect }}" style="{{ opt.style }}" style-hover="border-color:#c6a8ff;">{{ opt.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q5 TON -->
+      <div style="background:#fff;border:1px solid #F0EBF7;border-radius:24px;padding:32px 34px;box-shadow:0 4px 24px rgba(140,82,255,0.05);">
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:#8c52ff;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;">5</div>
+          <h3 style="font-size:24px;font-weight:700;">Quel ton&nbsp;?</h3>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px;">
+          <sc-for list="{{ tonList }}" as="opt" hint-placeholder-count="4">
+            <div onClick="{{ opt.onSelect }}" style="{{ opt.style }}" style-hover="border-color:#c6a8ff;">
+              <div style="font-size:16px;font-weight:600;text-align:center;">{{ opt.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:12px;">
+        <div onClick="{{ onContinue }}" style="{{ continueStyle }}" style-hover="transform:translateY(-2px);box-shadow:0 14px 34px rgba(140,82,255,0.42);">
+          Continuer <span style="font-size:21px;">→</span>
+        </div>
+        <p style="font-size:14px;color:#a39bb5;">{{ continueHint }}</p>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ STEP 2 : QUESTIONS PRÉCISES ============ -->
+    <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:34px;animation:pop .35s ease both;">
+      <div style="background:#F4EEFF;border:1px solid #e6d8ff;border-radius:18px;padding:20px 24px;display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div style="font-size:22px;">✦</div>
+        <div style="font-size:17px;line-height:1.45;color:#4a4458;">{{ step2Intro }}</div>
+      </div>
+
+      <!-- ASSISTANT IA -->
+      <div style="background:linear-gradient(135deg,#2A2336,#3a2f52);border-radius:22px;padding:28px 32px;margin-bottom:24px;color:#fff;">
+        <div style="display:flex;align-items:flex-start;gap:13px;">
+          <div style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;">💡</div>
+          <div style="flex:1;">
+            <h3 style="font-size:21px;font-weight:700;line-height:1.25;">Besoin d'un coup de pouce&nbsp;?</h3>
+            <p style="font-size:15px;line-height:1.55;color:#d3cae6;margin-top:6px;">Tu sèches sur une idée, un titre, un plan&nbsp;? Demande-moi&nbsp;: je te propose des idées, je formule à ta place, j'enrichis ton contenu. Je connais déjà ton type de produit et ton univers.</p>
+
+            <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;">
+              <sc-for list="{{ assistChips }}" as="c" hint-placeholder-count="3">
+                <div onClick="{{ c.onClick }}" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.16);border-radius:999px;padding:9px 15px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;" style-hover="background:rgba(255,255,255,0.2);">{{ c.label }}</div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+              <textarea value="{{ assistInput }}" oninput="{{ onAssistInput }}" placeholder="Ex : propose-moi 3 titres accrocheurs, ou aide-moi à structurer mon plan…" style="flex:1;min-width:240px;min-height:52px;resize:vertical;font-family:'Poppins',sans-serif;font-size:15px;line-height:1.5;color:#2E2A36;background:#fff;border:none;border-radius:13px;padding:13px 16px;outline:none;"></textarea>
+              <div onClick="{{ onAssistAsk }}" style="{{ assistBtnStyle }}" style-hover="background:#7a3fe0;"><span style="font-size:17px;">✦</span> {{ assistBtnLabel }}</div>
+            </div>
+
+            <sc-if value="{{ assistHasReply }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:18px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:20px 22px;">
+                <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#b8a9e0;margin-bottom:10px;">Mes suggestions</div>
+                <div style="font-size:16px;line-height:1.65;color:#f0ecf7;white-space:pre-wrap;">{{ assistReply }}</div>
+                <div style="display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;">
+                  <div onClick="{{ onAssistInsert }}" style="background:#8c52ff;color:#fff;font-weight:600;font-size:14px;padding:10px 18px;border-radius:10px;cursor:pointer;" style-hover="background:#7a3fe0;">↓ Ajouter à mon esquisse</div>
+                  <div onClick="{{ onAssistClear }}" style="color:#b8a9e0;font-weight:500;font-size:14px;padding:10px 6px;cursor:pointer;" style-hover="color:#fff;">Effacer</div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <sc-for list="{{ detailQuestions }}" as="q" hint-placeholder-count="5">
+          <div style="background:#fff;border:1px solid #F0EBF7;border-radius:22px;padding:28px 32px;box-shadow:0 4px 24px rgba(140,82,255,0.05);">
+            <div style="display:flex;align-items:flex-start;gap:13px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#8c52ff;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px;">{{ q.num }}</div>
+              <div style="flex:1;">
+                <h3 style="font-size:21px;font-weight:700;line-height:1.25;">{{ q.label }}</h3>
+                <sc-if value="{{ q.hasHint }}" hint-placeholder-val="{{ false }}"><p style="font-size:15px;color:#8b8499;margin-top:5px;">{{ q.hint }}</p></sc-if>
+
+                <sc-if value="{{ q.isTextarea }}" hint-placeholder-val="{{ false }}">
+                  <textarea oninput="{{ q.onInput }}" placeholder="{{ q.placeholder }}" style="width:100%;margin-top:16px;min-height:96px;resize:vertical;font-family:'Poppins',sans-serif;font-size:17px;line-height:1.5;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:14px;padding:15px 18px;transition:border-color .15s;"></textarea>
+                </sc-if>
+                <sc-if value="{{ q.isText }}" hint-placeholder-val="{{ false }}">
+                  <input type="text" oninput="{{ q.onInput }}" placeholder="{{ q.placeholder }}" style="width:100%;margin-top:16px;font-family:'Poppins',sans-serif;font-size:17px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:14px;padding:15px 18px;transition:border-color .15s;" />
+                </sc-if>
+                <sc-if value="{{ q.isChips }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
+                    <sc-for list="{{ q.options }}" as="o" hint-placeholder-count="4">
+                      <div onClick="{{ o.onSelect }}" style="{{ o.style }}" style-hover="border-color:#c6a8ff;">{{ o.label }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+
+        <!-- BRANDING -->
+        <div style="background:#fff;border:1.5px solid #F0EBF7;border-radius:22px;padding:28px 32px;">
+          <div style="display:flex;align-items:flex-start;gap:13px;">
+            <div style="width:28px;height:28px;border-radius:9px;background:#efe6ff;color:#8c52ff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px;">✦</div>
+            <div style="flex:1;">
+              <h3 style="font-size:21px;font-weight:700;line-height:1.25;">Ton branding <span style="font-weight:500;color:#a39bb5;font-size:17px;">(optionnel)</span></h3>
+              <p style="font-size:15px;color:#8b8499;margin-top:5px;">Donne-moi ta marque et je conçois le produit à TON image — ton nom, ton style, tes couleurs apparaîtront dans le résultat.</p>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:18px;">
+                <div>
+                  <label style="font-size:14px;font-weight:600;color:#5b5667;">Nom de ta marque</label>
+                  <input type="text" oninput="{{ onBrandNameInput }}" placeholder="Ex : Studio Lumière, Chez Clara…" style="width:100%;margin-top:7px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:12px;padding:13px 15px;outline:none;" style-focus="border-color:#c6a8ff;" />
+                </div>
+                <div>
+                  <label style="font-size:14px;font-weight:600;color:#5b5667;">Ton slogan / ta signature</label>
+                  <input type="text" oninput="{{ onBrandSloganInput }}" placeholder="Ex : Avance à ton rythme" style="width:100%;margin-top:7px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:12px;padding:13px 15px;outline:none;" style-focus="border-color:#c6a8ff;" />
+                </div>
+              </div>
+
+              <div style="margin-top:18px;">
+                <label style="font-size:14px;font-weight:600;color:#5b5667;">Ta couleur principale</label>
+                <div style="display:flex;flex-wrap:wrap;gap:11px;align-items:center;margin-top:11px;">
+                  <sc-for list="{{ brandColors }}" as="c" hint-placeholder-count="6">
+                    <div onClick="{{ c.onSelect }}" title="{{ c.name }}" style="{{ c.style }}">{{ c.mark }}</div>
+                  </sc-for>
+                  <label style="display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-size:14px;font-weight:600;color:#5b5667;border:1.5px solid #ECE7F2;border-radius:11px;padding:7px 11px 7px 9px;background:#FBFAFF;" style-hover="border-color:#8c52ff;">
+                    <input type="color" oninput="{{ onBrandColorPick }}" value="{{ brandColorValue }}" style="width:30px;height:30px;border:none;background:none;padding:0;cursor:pointer;border-radius:8px;flex:none;" />
+                    <input type="text" value="{{ brandColorText }}" oninput="{{ onBrandColorText }}" placeholder="#F0744F" maxlength="7" style="width:90px;border:none;background:none;outline:none;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;color:#5b5667;font-variant-numeric:tabular-nums;letter-spacing:0.03em;text-transform:uppercase;" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ESQUISSE -->
+        <div style="background:linear-gradient(135deg,#fff,#FBF7FF);border:1.5px dashed #d9c6ff;border-radius:22px;padding:28px 32px;">
+          <div style="display:flex;align-items:flex-start;gap:13px;">
+            <div style="width:28px;height:28px;border-radius:9px;background:#efe6ff;color:#8c52ff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px;">✎</div>
+            <div style="flex:1;">
+              <h3 style="font-size:21px;font-weight:700;line-height:1.25;">As-tu déjà une esquisse&nbsp;? <span style="font-weight:500;color:#a39bb5;font-size:17px;">(optionnel)</span></h3>
+              <p style="font-size:15px;color:#8b8499;margin-top:5px;">Si tu as déjà commencé — un brouillon, des notes, un plan, des morceaux de texte — colle-les ici. Je pars de ton travail au lieu de repartir de zéro.</p>
+              <textarea value="{{ esquisse }}" oninput="{{ onEsquisseInput }}" placeholder="Colle ici ton brouillon, tes idées en vrac, ton plan, tes textes déjà écrits…" style="width:100%;margin-top:16px;min-height:120px;resize:vertical;font-family:'Poppins',sans-serif;font-size:17px;line-height:1.5;color:#2E2A36;background:#fff;border:2px solid #ECE7F2;border-radius:14px;padding:15px 18px;transition:border-color .15s;"></textarea>
+
+              <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap;">
+                <label style="display:inline-flex;align-items:center;gap:9px;cursor:pointer;background:#F4EEFF;border:1.5px solid #e6d8ff;color:#7a3fe0;font-weight:600;font-size:14px;padding:11px 18px;border-radius:12px;" style-hover="background:#ece0ff;">
+                  <span style="font-size:16px;">📎</span> {{ fileBtnLabel }}
+                  <input type="file" accept=".txt,.md,.csv,.rtf,.pdf,.doc,.docx,text/plain" onChange="{{ onFilePick }}" style="display:none;" />
+                </label>
+                <span style="font-size:13px;color:#a39bb5;">Word, PDF ou texte — j'en extrais le contenu pour m'en inspirer.</span>
+              </div>
+              <sc-if value="{{ fileHasStatus }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px;font-size:14px;color:{{ fileStatusColor }};font-weight:500;">{{ fileStatus }}</div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:14px;margin-top:26px;align-items:center;">
+        <div onClick="{{ onBack1 }}" style="background:#fff;color:#8c52ff;border:2px solid #e2d3ff;font-weight:700;font-size:17px;padding:15px 26px;border-radius:14px;cursor:pointer;" style-hover="background:#F4EEFF;">← Retour</div>
+        <div onClick="{{ onCreate }}" style="flex:1;text-align:center;background:#8c52ff;color:#fff;font-weight:700;font-size:20px;padding:18px 28px;border-radius:14px;cursor:pointer;box-shadow:0 10px 26px rgba(140,82,255,0.32);" style-hover="background:#7a3fe0;"><span style="font-size:21px;">✦</span> Créer mon produit</div>
+      </div>
+      <p style="text-align:center;font-size:14px;color:#a39bb5;margin-top:12px;">Plus tu remplis, plus ton produit te ressemblera. Tu pourras tout retravailler ensuite.</p>
+    </div>
+    </sc-if>
+
+    <!-- ============ LOADING ============ -->
+    <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:90px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:60px 20px;">
+      <div style="width:64px;height:64px;border-radius:50%;border:5px solid #ede4ff;border-top-color:#8c52ff;animation:spin .8s linear infinite;"></div>
+      <div style="font-size:25px;font-weight:700;margin-top:34px;">{{ loadingTitle }}</div>
+      <div style="font-size:18px;color:#8c52ff;font-weight:600;margin-top:10px;animation:pulse 1.4s ease-in-out infinite;">{{ currentLoadMsg }}</div>
+    </div>
+    </sc-if>
+
+    <!-- ============ LIMITE ATTEINTE ============ -->
+    <sc-if value="{{ isLimit }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:40px;animation:pop .4s ease both;display:flex;justify-content:center;">
+      <div style="max-width:560px;width:100%;background:#fff;border:1px solid #EEE7F7;border-radius:24px;padding:48px 44px;text-align:center;box-shadow:0 16px 60px rgba(140,82,255,0.12);">
+        <div style="width:66px;height:66px;border-radius:20px;background:#F4EEFF;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 22px;">💜</div>
+        <h2 style="font-size:30px;font-weight:800;letter-spacing:-0.01em;">Tu as utilisé toutes tes créations</h2>
+        <p style="font-family:'Newsreader',serif;font-size:20px;line-height:1.5;color:#5b5667;margin-top:14px;">Tu as profité des {{ limitTotal }} créations offertes avec le studio. J'espère que tu en as fait de belles choses&nbsp;!</p>
+        <p style="font-size:16px;line-height:1.55;color:#8b8499;margin-top:14px;">Envie d'aller plus loin&nbsp;? Écris-moi, on continue ensemble.</p>
+        <a href="{{ limitCtaUrl }}" style="display:inline-block;margin-top:24px;background:#8c52ff;color:#fff;font-weight:700;font-size:18px;padding:16px 36px;border-radius:14px;text-decoration:none;" style-hover="background:#7a3fe0;">Contacter Top Départ</a>
+        <sc-if value="{{ showResetCounter }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ onResetCounter }}" style="margin-top:18px;font-size:13px;color:#b3acc2;cursor:pointer;text-decoration:underline;" style-hover="color:#8c52ff;">↺ réinitialiser le compteur (test)</div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ STEP 3 : PRODUIT ============ -->
+    <sc-if value="{{ isProduct }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:30px;animation:pop .4s ease both;">
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="font-size:14px;font-weight:600;letter-spacing:0.1em;color:#8c52ff;background:#F4EEFF;padding:8px 16px;border-radius:999px;">{{ aiBadge }}</div>
+        <div style="font-size:13px;font-weight:600;letter-spacing:0.1em;color:#9a93ab;text-transform:uppercase;">{{ p.format }}</div>
+        <div style="margin-left:auto;font-size:13px;color:#b3acc2;">Aperçu mis en page · à retravailler avec moi ↓</div>
+      </div>
+
+      <!-- THE LAID-OUT PRODUCT -->
+      <div style="background:#fff;border:1px solid #EEE7F7;border-radius:24px;overflow:hidden;box-shadow:0 16px 60px rgba(140,82,255,0.12);">
+        <div style="{{ heroStyle }}">
+          <sc-if value="{{ hasBrandName }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;font-weight:700;letter-spacing:0.04em;margin-bottom:10px;opacity:0.95;">{{ brandName }}</div>
+          </sc-if>
+          <div style="font-size:13px;font-weight:600;letter-spacing:0.18em;opacity:0.85;text-transform:uppercase;margin-bottom:14px;">{{ p.format }}</div>
+          <h2 style="font-size:42px;line-height:1.06;font-weight:800;letter-spacing:-0.02em;">{{ p.titre }}</h2>
+          <p style="font-family:'Newsreader',serif;font-size:23px;line-height:1.4;margin-top:14px;opacity:0.96;max-width:680px;">{{ p.sousTitre }}</p>
+          <sc-if value="{{ hasBrandSlogan }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;font-style:italic;margin-top:14px;opacity:0.9;">« {{ brandSlogan }} »</div>
+          </sc-if>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;">
+            <sc-if value="{{ p.hasPromesse }}" hint-placeholder-val="{{ false }}"><div style="background:rgba(255,255,255,0.18);padding:10px 18px;border-radius:999px;font-size:15px;font-weight:600;">✦ {{ p.promesse }}</div></sc-if>
+            <sc-if value="{{ p.hasPrix }}" hint-placeholder-val="{{ false }}"><div style="background:rgba(255,255,255,0.18);padding:10px 18px;border-radius:999px;font-size:15px;font-weight:600;">{{ p.prix }}</div></sc-if>
+          </div>
+        </div>
+
+        <div style="padding:44px 52px;display:flex;flex-direction:column;gap:36px;">
+          <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="5">
+            <div>
+              <sc-if value="{{ b.isProse }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <sc-if value="{{ b.hasNum }}" hint-placeholder-val="{{ true }}"><div style="width:32px;height:32px;border-radius:9px;background:#F4EEFF;color:#8c52ff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;">{{ b.num }}</div></sc-if>
+                  <h3 style="font-size:25px;font-weight:700;letter-spacing:-0.01em;">{{ b.titre }}</h3>
+                </div>
+                <sc-if value="{{ b.hasTexte }}" hint-placeholder-val="{{ true }}"><p style="font-size:18px;line-height:1.6;color:#4a4458;">{{ b.texte }}</p></sc-if>
+                <sc-if value="{{ b.hasPoints }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px;">
+                    <sc-for list="{{ b.points }}" as="pt" hint-placeholder-count="3">
+                      <div style="display:flex;gap:11px;align-items:flex-start;font-size:17px;color:#4a4458;line-height:1.5;"><span style="color:#8c52ff;font-weight:700;margin-top:1px;">›</span><span>{{ pt }}</span></div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </sc-if>
+
+              <sc-if value="{{ b.isExercice }}" hint-placeholder-val="{{ false }}">
+                <div style="border:2px dashed #d9c6ff;border-radius:18px;padding:26px 28px;background:#FCFAFF;">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                    <span style="font-size:18px;">✍️</span><h3 style="font-size:22px;font-weight:700;">{{ b.titre }}</h3>
+                  </div>
+                  <sc-if value="{{ b.hasTexte }}" hint-placeholder-val="{{ false }}"><p style="font-size:16px;line-height:1.55;color:#6b6480;margin-bottom:18px;">{{ b.texte }}</p></sc-if>
+                  <div style="display:flex;flex-direction:column;gap:16px;">
+                    <sc-for list="{{ b.exFields }}" as="c" hint-placeholder-count="3">
+                      <div>
+                        <div style="font-size:15px;font-weight:600;color:#5b5667;margin-bottom:7px;">{{ c.label }}</div>
+                        <textarea value="{{ c.value }}" onChange="{{ c.onInput }}" placeholder="Ta réponse…" style="width:100%;border:1.5px solid #ECE7F2;border-radius:12px;background:#fff;min-height:54px;padding:13px 16px;font-family:'Poppins',sans-serif;font-size:16px;color:#2E2A36;resize:vertical;outline:none;" style-focus="border-color:#c6a8ff;"></textarea>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isChecklist }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;"><h3 style="font-size:25px;font-weight:700;">{{ b.titre }}</h3></div>
+                <div style="display:flex;flex-direction:column;gap:11px;">
+                  <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="4">
+                    <div onClick="{{ it.onToggle }}" style="{{ it.rowStyle }}">
+                      <div style="{{ it.boxStyle }}">{{ it.mark }}</div>
+                      <span style="{{ it.labelStyle }}">{{ it.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isTracker }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;"><span style="font-size:18px;">📊</span><h3 style="font-size:25px;font-weight:700;">{{ b.titre }}</h3></div>
+                <div style="border:1px solid #EEE7F7;border-radius:16px;overflow:hidden;">
+                  <div style="display:grid;{{ b.gridStyle }};background:#F4EEFF;">
+                    <div style="padding:13px 16px;font-size:14px;font-weight:700;color:#7a3fe0;">{{ b.rowLabel }}</div>
+                    <sc-for list="{{ b.header }}" as="h" hint-placeholder-count="5">
+                      <div style="padding:13px 6px;font-size:13px;font-weight:700;color:#7a3fe0;text-align:center;border-left:1px solid #e6d8ff;">{{ h }}</div>
+                    </sc-for>
+                  </div>
+                  <sc-for list="{{ b.rows }}" as="row" hint-placeholder-count="4">
+                    <div style="display:grid;{{ b.gridStyle }};border-top:1px solid #F0EBF7;">
+                      <div style="padding:14px 16px;font-size:16px;color:#3a3548;font-weight:500;">{{ row.label }}</div>
+                      <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="5">
+                        <div onClick="{{ cell.onToggle }}" style="{{ cell.style }}">{{ cell.mark }}</div>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isSaisie }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid #EEE7F7;border-radius:18px;overflow:hidden;">
+                  <div style="background:#F4EEFF;padding:18px 26px;display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">🧮</span><h3 style="font-size:22px;font-weight:700;color:#2E2A36;">{{ b.titre }}</h3></div>
+                  <div style="padding:24px 26px;">
+                    <sc-if value="{{ b.hasTexte }}" hint-placeholder-val="{{ false }}"><p style="font-size:16px;line-height:1.55;color:#6b6480;margin-bottom:18px;">{{ b.texte }}</p></sc-if>
+                    <div style="display:flex;flex-direction:column;gap:13px;">
+                      <sc-for list="{{ b.saiFields }}" as="c" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;gap:16px;">
+                          <div style="flex:1;font-size:16px;color:#3a3548;font-weight:500;">{{ c.label }}</div>
+                          <input type="number" inputmode="decimal" value="{{ c.value }}" onChange="{{ c.onInput }}" placeholder="0" style="width:160px;border:1.5px solid #ECE7F2;border-radius:10px;background:#FBFAFF;min-height:48px;flex:none;padding:0 16px;font-family:'Poppins',sans-serif;font-size:17px;font-weight:600;color:#2E2A36;text-align:right;outline:none;" style-focus="border-color:#c6a8ff;background:#fff;">
+                        </div>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ b.hasResultat }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#8c52ff;color:#fff;border-radius:12px;padding:18px 24px;">
+                        <div style="font-size:17px;font-weight:600;">{{ b.resultat }}</div>
+                        <sc-if value="{{ b.resultEditable }}" hint-placeholder-val="{{ false }}">
+                          <input type="text" value="{{ b.resultValue }}" onChange="{{ b.onResultInput }}" placeholder="…" style="width:120px;border:1.5px dashed rgba(255,255,255,0.55);border-radius:9px;min-height:38px;flex:none;background:rgba(255,255,255,0.12);color:#fff;padding:0 12px;font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;text-align:right;outline:none;">
+                        </sc-if>
+                        <sc-if value="{{ b.resultComputed }}" hint-placeholder-val="{{ true }}">
+                          <div style="font-size:26px;font-weight:800;letter-spacing:-0.01em;flex:none;text-align:right;min-width:90px;">{{ b.resultValue }}</div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isCta }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#2A2336;border-radius:18px;padding:32px 34px;text-align:center;">
+                  <h3 style="font-size:25px;font-weight:700;color:#fff;">{{ b.titre }}</h3>
+                  <sc-if value="{{ b.hasTexte }}" hint-placeholder-val="{{ false }}"><p style="font-size:17px;line-height:1.55;color:#cdbdf0;margin-top:10px;max-width:560px;margin-left:auto;margin-right:auto;">{{ b.texte }}</p></sc-if>
+                  <div style="display:inline-block;margin-top:20px;background:#8c52ff;color:#fff;font-weight:700;font-size:18px;padding:15px 34px;border-radius:12px;">{{ b.bouton }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isQuote }}" hint-placeholder-val="{{ false }}">
+                <div style="border-left:4px solid #8c52ff;padding:6px 0 6px 24px;">
+                  <p style="font-family:'Newsreader',serif;font-style:italic;font-size:24px;line-height:1.4;color:#5b5667;">{{ b.texte }}</p>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- REFINE STUDIO -->
+      <div style="margin-top:24px;background:#fff;border:1px solid #EEE7F7;border-radius:24px;padding:32px 34px;box-shadow:0 4px 24px rgba(140,82,255,0.06);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:38px;height:38px;border-radius:11px;background:#8c52ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;">✦</div>
+          <div>
+            <h3 style="font-size:22px;font-weight:700;">Retravaillons-le ensemble</h3>
+            <p style="font-size:15px;color:#8b8499;margin-top:2px;">Dis-moi quoi changer, ajoute ton expertise, tes textes. Je mets ton produit à jour.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:20px;">
+          <sc-for list="{{ suggestions }}" as="sg" hint-placeholder-count="5">
+            <div onClick="{{ sg.onClick }}" style="background:#F4EEFF;color:#7a3fe0;font-weight:600;font-size:14px;padding:9px 16px;border-radius:999px;cursor:pointer;border:1px solid #e6d8ff;" style-hover="background:#e8dcff;">{{ sg.label }}</div>
+          </sc-for>
+        </div>
+
+        <textarea oninput="{{ onRefineInput }}" placeholder="Ex : « Ajoute une section sur la respiration », « Remplace l'intro par ce texte : … », « Rends le ton plus doux »…" style="width:100%;margin-top:16px;min-height:90px;resize:vertical;font-family:'Poppins',sans-serif;font-size:17px;line-height:1.5;color:#2E2A36;background:#FBFAFF;border:2px solid #ECE7F2;border-radius:14px;padding:15px 18px;transition:border-color .15s;"></textarea>
+
+        <div style="display:flex;gap:12px;margin-top:14px;align-items:center;flex-wrap:wrap;">
+          <div onClick="{{ onRefine }}" style="{{ refineBtnStyle }}" style-hover="background:#7a3fe0;"><span style="font-size:18px;">✦</span> {{ refineBtnLabel }}</div>
+          <div onClick="{{ onReset }}" style="margin-left:auto;color:#a39bb5;font-weight:600;font-size:15px;cursor:pointer;padding:13px 10px;" style-hover="color:#8c52ff;">↺ Tout recommencer</div>
+        </div>
+
+        <div style="margin-top:18px;padding-top:18px;border-top:1px solid #F0EBF7;">
+          <div style="font-size:13px;font-weight:600;letter-spacing:0.04em;color:#9a93ab;text-transform:uppercase;margin-bottom:12px;">Récupérer ton produit</div>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <sc-if value="{{ showPdf }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ onDownloadPdf }}" style="background:#8c52ff;color:#fff;font-weight:700;font-size:16px;padding:14px 24px;border-radius:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 22px rgba(140,82,255,0.28);" style-hover="background:#7a3fe0;">📄 Télécharger en PDF</div>
+            </sc-if>
+            <div onClick="{{ onDownloadHtml }}" style="background:#fff;color:#8c52ff;border:2px solid #e2d3ff;font-weight:700;font-size:16px;padding:13px 22px;border-radius:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" style-hover="background:#F4EEFF;">{{ htmlLabel }}</div>
+            <div onClick="{{ onCopy }}" style="color:#a39bb5;font-weight:600;font-size:15px;cursor:pointer;padding:13px 10px;" style-hover="color:#8c52ff;">{{ copyLabel }}</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="text-align:center;font-size:14px;color:#b3acc2;margin-top:22px;max-width:640px;margin-left:auto;margin-right:auto;line-height:1.5;">{{ exportHint }}</p>
+    </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:960},&quot;usageLimit&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:10,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:1,&quot;max&quot;:100},&quot;contactUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;#&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = {
+    step: 1,
+    answers: { type: null, niche: null, nicheAutre: '', objectif: null, ton: null, audience: '', avatarSituation: '', avatarDefi: '', avatarDesir: '', avatarBlocage: '', avatarAge: null },
+    detail: {}, esquisse: '', brand: { name: '', slogan: '', color: '', colorText: '' },
+    loading: false, loadingMode: 'create', product: null, copied: false, refine: '', loadMsg: 0,
+    showLimit: false, fills: {},
+    assistInput: '', assistReply: '', assistLoading: false,
+    fileStatus: '', fileStatusColor: '#1f9d6b',
+    email: '', emailInput: '', emailError: '', emailChecking: false,
+    serverRemaining: null, serverLimit: null
+  };
+
+  componentDidMount() {
+    try {
+      const raw = localStorage.getItem('studio_fills');
+      if (raw) this.setState({ fills: JSON.parse(raw) || {} });
+    } catch (e) {}
+    try {
+      const em = localStorage.getItem('studio_email');
+      if (em) this.setState({ email: em });
+    } catch (e) {}
+  }
+
+  // ---------- saisies de la cliente (cochage, champs, calcul) : sauvegardées ----------
+  persistFills(f) { try { localStorage.setItem('studio_fills', JSON.stringify(f)); } catch (e) {} }
+  setFill(key, val) { this.setState(s => { const fills = { ...s.fills, [key]: val }; this.persistFills(fills); return { fills }; }); }
+  toggleFill(key) { this.setFill(key, !this.state.fills[key]); }
+  clearFills() { this.setState({ fills: {} }); this.persistFills({}); }
+  computeFormula(formule, vals) {
+    try {
+      const names = vals.map((_, i) => 'c' + i);
+      const f = new Function(...names, '"use strict"; return (' + formule + ');');
+      const r = f(...vals.map(v => { const n = parseFloat(v); return isFinite(n) ? n : 0; }));
+      if (typeof r !== 'number' || !isFinite(r)) return null;
+      return Math.round(r * 100) / 100;
+    } catch (e) { return null; }
+  }
+  fmtNum(n) { return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(n); }
+
+  // ---------- option data ----------
+  get TYPES() { return [
+    { value: 'Workbook interactif', label: 'Workbook', desc: 'Un guide à remplir', fam: 'workbook' },
+    { value: 'Guide premium (ebook)', label: 'Guide / ebook', desc: 'Un ebook qui démarque', fam: 'workbook' },
+    { value: 'Mini-formation', label: 'Mini-formation', desc: 'Leçons + exercices', fam: 'workbook' },
+    { value: 'Planner / agenda', label: 'Planner', desc: 'Planifier ses journées', fam: 'tracker' },
+    { value: 'Tracker / tableau de bord', label: 'Tracker', desc: 'Suivi d\'habitudes', fam: 'tracker' },
+    { value: 'Calculateur / simulateur', label: 'Calculateur', desc: 'Un outil qui calcule', fam: 'calculator' },
+    { value: 'Checklist & plan d\'action', label: 'Checklist & plan', desc: 'Des étapes à cocher', fam: 'checklist' },
+    { value: 'Templates & modèles', label: 'Templates', desc: 'Modèles à dupliquer', fam: 'checklist' },
+    { value: 'Page de vente', label: 'Page de vente', desc: 'Pour vendre ton offre', fam: 'sales' },
+    { value: 'Email / séquence de vente', label: 'Séquence email', desc: 'Vendre en automatique', fam: 'sales' },
+    { value: 'Carrousel / contenu réseaux', label: 'Carrousel', desc: 'Posts qui attirent', fam: 'sales' },
+    { value: 'Quiz / diagnostic', label: 'Quiz / diagnostic', desc: 'Un test qui oriente', fam: 'quiz' },
+    { value: 'Atelier / masterclass', label: 'Atelier live', desc: 'Un événement à vendre', fam: 'offer' },
+    { value: 'Bundle / pack de produits', label: 'Pack / bundle', desc: 'Plusieurs produits', fam: 'offer' },
+  ]; }
+  get AGES() { return ['18–25 ans','25–35 ans','35–45 ans','45–60 ans','60 ans +']; }
+  get NICHES() { return ['Parentalité','Maternité & grossesse','Bien-être','Santé & nutrition','Fitness & sport','Finances perso','Organisation','Productivité','Beauté','Mode & style','Business en ligne','Marketing & réseaux','Cuisine','Développement perso','Spiritualité','Couple & relations','Éducation & enfants','Créativité & DIY','Voyage','Carrière & reconversion','Autre']; }
+  get OBJECTIFS() { return [
+    { value: 'Attirer (produit gratuit)', label: 'Attirer', desc: 'Un aimant à clients' },
+    { value: 'Vendre (produit phare)', label: 'Vendre', desc: 'Ton produit payant' },
+    { value: 'Order bump', label: 'Order bump', desc: 'Un + à la commande' },
+    { value: 'Upsell (montée en gamme)', label: 'Upsell', desc: 'Une offre supérieure' },
+    { value: 'Downsell (offre de repli)', label: 'Downsell', desc: 'Une alternative douce' },
+    { value: 'Fidéliser mes clientes', label: 'Fidéliser', desc: 'Garder tes clientes' },
+    { value: 'Asseoir mon expertise', label: 'Expertise', desc: 'Gagner en crédibilité' },
+  ]; }
+  get TONS() { return [
+    { value: 'Chaleureux & bienveillant', label: 'Chaleureux' },
+    { value: 'Premium & élégant', label: 'Premium' },
+    { value: 'Énergique & motivant', label: 'Énergique' },
+    { value: 'Simple & direct', label: 'Simple & direct' },
+  ]; }
+  get LOAD_MSGS() { return ['Analyse de tes réponses…','Choix de la structure idéale…','Rédaction de ton contenu…','Mise en page premium…','Touche finale…']; }
+  get REFINE_MSGS() { return ['Je relis ton produit…','J\'applique tes changements…','Je réécris les sections…','Mise à jour…']; }
+
+  // ---------- styles ----------
+  optStyle(sel) { return `border:2px solid ${sel?'#8c52ff':'#ECE7F2'};background:${sel?'#F4EEFF':'#fff'};border-radius:16px;padding:16px 18px;cursor:pointer;display:flex;flex-direction:column;gap:4px;transition:all .15s;`; }
+  tonStyle(sel) { return `border:2px solid ${sel?'#8c52ff':'#ECE7F2'};background:${sel?'#F4EEFF':'#fff'};border-radius:14px;padding:16px 12px;cursor:pointer;transition:all .15s;`; }
+  chipStyle(sel) { return `border:2px solid ${sel?'#8c52ff':'#ECE7F2'};background:${sel?'#8c52ff':'#fff'};color:${sel?'#fff':'#4a4458'};border-radius:999px;padding:11px 20px;cursor:pointer;font-weight:600;font-size:16px;transition:all .15s;`; }
+
+  // ---------- helpers ----------
+  family() { const t = this.TYPES.find(x => x.value === this.state.answers.type); return t ? t.fam : 'workbook'; }
+  typeLabel() { const t = this.TYPES.find(x => x.value === this.state.answers.type); return t ? t.label : 'produit'; }
+  effectiveNiche() { const a = this.state.answers; return a.niche === 'Autre' ? (a.nicheAutre || 'univers personnalisé') : a.niche; }
+
+  select(q, v) { this.setState(s => ({ answers: { ...s.answers, [q]: v } })); }
+  onAudienceInput(e) { this.state.answers.audience = e.target.value; }
+  onSituationInput(e) { this.state.answers.avatarSituation = e.target.value; }
+  onDefiInput(e) { this.state.answers.avatarDefi = e.target.value; }
+  onDesirInput(e) { this.state.answers.avatarDesir = e.target.value; }
+  onBlocageInput(e) { this.state.answers.avatarBlocage = e.target.value; }
+  onNicheAutreInput(e) { this.state.answers.nicheAutre = e.target.value; }
+  setDetail(id, v) { this.setState(s => ({ detail: { ...s.detail, [id]: v } })); }
+  onEsquisseInput(e) { this.setState({ esquisse: e.target.value }); }
+  onBrandNameInput(e) { this.state.brand.name = e.target.value; }
+  onBrandSloganInput(e) { this.state.brand.slogan = e.target.value; }
+  selectBrandColor(hex) { this.setState(s => ({ brand: { ...s.brand, color: hex, colorText: hex.toUpperCase() } })); }
+  onBrandColorPick(e) { this.selectBrandColor(e.target.value); }
+  onBrandColorText(e) {
+    let v = e.target.value.trim();
+    if (v && v[0] !== '#') v = '#' + v.replace(/#/g, '');
+    v = v.slice(0, 7);
+    const valid = /^#[0-9a-fA-F]{6}$/.test(v);
+    this.setState(s => ({ brand: { ...s.brand, colorText: v, color: valid ? v : s.brand.color } }));
+  }
+
+  // ---------- pièce jointe : extraction du texte (Word / PDF / texte) ----------
+  _readAsText(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(file); }); }
+  _readAsBuffer(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsArrayBuffer(file); }); }
+  async _extractPdf(file) {
+    if (!window.pdfjsLib) throw new Error('pdf');
+    try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; } catch (e) {}
+    const buf = await this._readAsBuffer(file);
+    const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+    let out = '';
+    const max = Math.min(pdf.numPages, 30);
+    for (let i = 1; i <= max; i++) { const page = await pdf.getPage(i); const tc = await page.getTextContent(); out += tc.items.map(it => it.str).join(' ') + '\n'; }
+    return out.trim();
+  }
+  async _extractDocx(file) {
+    if (!window.mammoth) throw new Error('docx');
+    const buf = await this._readAsBuffer(file);
+    const r = await window.mammoth.extractRawText({ arrayBuffer: buf });
+    return (r && r.value || '').trim();
+  }
+  async onFilePick(e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { this.setState({ fileStatus: 'Fichier trop lourd (8 Mo max).', fileStatusColor: '#d9534f' }); return; }
+    this.setState({ fileStatus: 'Lecture de « ' + file.name +' »…', fileStatusColor: '#8c52ff' });
+    const name = file.name.toLowerCase();
+    try {
+      let text = '';
+      if (name.endsWith('.pdf')) text = await this._extractPdf(file);
+      else if (name.endsWith('.docx')) text = await this._extractDocx(file);
+      else if (name.endsWith('.doc')) { this.setState({ fileStatus: 'Les vieux fichiers .doc ne sont pas lisibles — enregistre-le en .docx ou copie-colle le texte.', fileStatusColor: '#d9534f' }); return; }
+      else text = await this._readAsText(file);
+      text = (text || '').trim();
+      if (!text) { this.setState({ fileStatus: "Je n'ai pas trouvé de texte dans ce fichier (s'il s'agit d'un PDF scanné/image, copie le texte à la main).", fileStatusColor: '#d9534f' }); return; }
+      if (text.length > 6000) text = text.slice(0, 6000) + '\u2026';
+      this.setState(s => ({ esquisse: (s.esquisse ? s.esquisse.trim() + '\n\n' : '') + text, fileStatus: '✓ « ' + file.name + ' » ajouté à ton esquisse.', fileStatusColor: '#1f9d6b' }));
+    } catch (err) {
+      this.setState({ fileStatus: "Je n'ai pas réussi à lire ce fichier — essaie en .docx, .pdf ou .txt, ou copie-colle le texte.", fileStatusColor: '#d9534f' });
+    }
+  }
+
+  // ---------- assistant IA (aide à formuler / trouver des idées) ----------
+  onAssistInput(e) { this.setState({ assistInput: e.target.value }); }
+  assistPreset(text) { this.setState({ assistInput: text }); }
+  assistClear() { this.setState({ assistReply: '', assistInput: '' }); }
+  assistInsert() {
+    const r = this.state.assistReply; if (!r) return;
+    this.setState(s => ({ esquisse: (s.esquisse ? s.esquisse.trim() + '\n\n' : '') + r }));
+  }
+  async askAssistant() {
+    const q = (this.state.assistInput || '').trim();
+    if (!q || this.state.assistLoading) return;
+    this.setState({ assistLoading: true });
+    const a = this.state.answers;
+    const prompt = `Tu es une coach experte en création de produits numériques pour entrepreneures francophones. Tu aides une créatrice à avancer sur SON produit.\n`
+      + `Contexte de son produit :\n- Type : ${a.type || 'non précisé'}\n- Univers : ${this.effectiveNiche() || 'non précisé'}\n- Public visé : ${a.audience || 'non précisé'}\n- Ton souhaité : ${a.ton || 'chaleureux'}\n`
+      + (this.state.esquisse && this.state.esquisse.trim() ? `- Ce qu'elle a déjà écrit : """${this.state.esquisse.trim().slice(0, 800)}"""\n` : '')
+      + `\nSa demande : "${q}"\n\n`
+      + `Réponds directement, en français, de façon chaleureuse et CONCISE (max ~150 mots). Donne des idées concrètes, prêtes à utiliser (titres, plan, formulations…). Pas de blabla d'introduction, va à l'essentiel. Texte simple, sans markdown, sans astérisques.`;
+    try {
+      const raw = await this.callClaude(prompt);
+      this.setState({ assistReply: String(raw).trim(), assistLoading: false });
+    } catch (e) {
+      this.setState({ assistReply: "Je n'ai pas réussi à répondre à l'instant — réessaie dans un moment.", assistLoading: false });
+    }
+  }
+  get BRAND_COLORS() { return [
+    { name: 'Violet', hex: '#8c52ff' }, { name: 'Prune', hex: '#7a3fe0' }, { name: 'Rose', hex: '#e0608e' },
+    { name: 'Framboise', hex: '#c2185b' }, { name: 'Corail', hex: '#f0744f' }, { name: 'Terracotta', hex: '#c2613c' },
+    { name: 'Ambre', hex: '#e0a32e' }, { name: 'Or', hex: '#b8860b' }, { name: 'Olive', hex: '#7d8b3a' },
+    { name: 'Émeraude', hex: '#1f9d6b' }, { name: 'Sauge', hex: '#7a9b8e' }, { name: 'Turquoise', hex: '#13a3a3' },
+    { name: 'Bleu', hex: '#3b7bd6' }, { name: 'Marine', hex: '#2a3f7a' }, { name: 'Encre', hex: '#2A2336' },
+    { name: 'Taupe', hex: '#8a7a6d' }
+  ]; }
+  onRefineInput(e) { this.state.refine = e.target.value; }
+
+  // ---------- porte e-mail + limite d'utilisation ----------
+  usageLimit() { const p = this.props && this.props.usageLimit; return (typeof p === 'number' && p > 0) ? p : 10; }
+  usageKey() { return 'studio_top_depart_uses'; }
+  usageCount() { try { return parseInt(localStorage.getItem(this.usageKey()) || '0', 10) || 0; } catch (e) { return 0; } }
+  incUsage() { try { localStorage.setItem(this.usageKey(), String(this.usageCount() + 1)); } catch (e) {} }
+  usesLeft() { return Math.max(0, this.usageLimit() - this.usageCount()); }
+  isPreviewEnv() { return !!(window.claude && window.claude.complete); }
+  resetUsage() { try { localStorage.setItem(this.usageKey(), '0'); localStorage.removeItem('studio_email'); } catch (e) {} this.setState({ showLimit: false, email: '', emailInput: '', serverRemaining: null }); }
+  remainingNow() {
+    if (this.isPreviewEnv()) return this.usesLeft();
+    return this.state.serverRemaining == null ? this.usageLimit() : this.state.serverRemaining;
+  }
+  validEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || '').trim()); }
+  onEmailInput(e) { this.setState({ emailInput: e.target.value, emailError: '' }); }
+  async submitEmail() {
+    const email = (this.state.emailInput || '').trim().toLowerCase();
+    if (!this.validEmail(email)) { this.setState({ emailError: 'Entre une adresse e-mail valide pour commencer.' }); return; }
+    if (this.isPreviewEnv()) {
+      try { localStorage.setItem('studio_email', email); } catch (e) {}
+      this.setState({ email, emailError: '' });
+      return;
+    }
+    this.setState({ emailChecking: true, emailError: '' });
+    try {
+      const r = await fetch('/api/claude', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, check: true }) });
+      const d = await r.json();
+      try { localStorage.setItem('studio_email', email); } catch (e) {}
+      const remaining = (typeof d.remaining === 'number') ? d.remaining : null;
+      this.setState({ email, emailChecking: false, serverRemaining: remaining, serverLimit: d.limit || this.usageLimit(), showLimit: remaining !== null && remaining <= 0 });
+    } catch (e) {
+      try { localStorage.setItem('studio_email', email); } catch (er) {}
+      this.setState({ email, emailChecking: false });
+    }
+  }
+
+  // ---------- appel à Claude (proxy sécurisé en ligne, repli aperçu) ----------
+  async callClaude(prompt) {
+    // Dans l'aperçu Anthropic : connexion intégrée (aucune clé requise).
+    if (window.claude && window.claude.complete) {
+      return await window.claude.complete({ messages: [{ role: 'user', content: prompt }] });
+    }
+    // En ligne : on passe par le mini-serveur qui garde TA clé cachée + compte par e-mail.
+    const r = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, email: this.state.email }),
+    });
+    if (r.status === 403) {
+      let d = {}; try { d = await r.json(); } catch (e) {}
+      this.setState({ serverRemaining: 0, serverLimit: d.limit || this.usageLimit() });
+      const err = new Error('limit'); err.code = 'limit'; throw err;
+    }
+    if (!r.ok) throw new Error('proxy ' + r.status);
+    const d = await r.json();
+    if (typeof d.remaining === 'number') this.setState({ serverRemaining: d.remaining, serverLimit: d.limit || this.usageLimit() });
+    if (!d.text) throw new Error('empty');
+    return d.text;
+  }
+
+  // ---------- step 2 question sets ----------
+  questionSet() {
+    const fam = this.family();
+    const sets = {
+      workbook: [
+        { id: 'transfo', kind: 'textarea', label: 'Quelle transformation ta cliente vivra-t-elle ?', hint: 'Le résultat concret à la fin.', ph: 'Ex : elle aura un planning de repas pour 4 semaines, sans stress.' },
+        { id: 'expertise', kind: 'textarea', label: 'Tes idées, méthodes, conseils à inclure', hint: 'Ton expertise — ce qui rend ce produit unique.', ph: 'Tes astuces, ta méthode, tes convictions…' },
+        { id: 'etapes', kind: 'textarea', label: 'Les grandes étapes ou chapitres à couvrir', hint: 'Une idée par ligne, dans l\'ordre.', ph: 'Étape 1…\nÉtape 2…\nÉtape 3…' },
+        { id: 'exercices', kind: 'chips', label: 'Veux-tu des exercices à remplir ?', options: ['Oui, beaucoup', 'Quelques-uns', 'Non'] },
+        { id: 'longueur', kind: 'chips', label: 'Quelle longueur de produit ?', hint: 'La quantité de contenu généré.', options: ['Court (l\'essentiel)', 'Moyen (équilibré)', 'Long (très complet)'] },
+      ],
+      tracker: [
+        { id: 'suivi', kind: 'textarea', label: 'Qu\'est-ce qu\'elle va suivre exactement ?', hint: 'Habitudes, indicateurs, objectifs…', ph: 'Ex : eau bue, sport, humeur, sommeil…' },
+        { id: 'duree', kind: 'chips', label: 'Sur quelle durée ?', options: ['7 jours', '21 jours', '30 jours', 'Chaque mois'] },
+        { id: 'frequence', kind: 'chips', label: 'À quelle fréquence ?', options: ['Chaque jour', 'Chaque semaine'] },
+        { id: 'champs', kind: 'textarea', label: 'Quels champs / mesures afficher ?', hint: 'Les colonnes de ton tableau.', ph: 'Ex : fait / pas fait, note sur 5, minutes…' },
+        { id: 'bonus', kind: 'text', label: 'Un espace bonus ?', hint: 'Optionnel.', ph: 'Ex : note de gratitude, intention du jour…' },
+      ],
+      calculator: [
+        { id: 'calcule', kind: 'textarea', label: 'Que doit calculer ton outil ?', hint: 'Le résultat qu\'il donne.', ph: 'Ex : le tarif idéal d\'une prestation, un budget mensuel…' },
+        { id: 'entrees', kind: 'textarea', label: 'Quelles valeurs la personne va entrer ?', hint: 'Une par ligne — ce sont les champs à remplir.', ph: 'Ex : nombre d\'heures, taux horaire, charges fixes…' },
+        { id: 'resultat', kind: 'text', label: 'Quel est le résultat affiché ?', ph: 'Ex : « Ton tarif conseillé », « Ton budget restant »…' },
+        { id: 'conseil', kind: 'text', label: 'Un conseil à afficher avec le résultat ?', hint: 'Optionnel.', ph: 'Ex : « Pense à ajouter 20% pour tes imprévus »' },
+      ],
+      checklist: [
+        { id: 'but', kind: 'textarea', label: 'Quel résultat la checklist permet d\'atteindre ?', ph: 'Ex : lancer sa boutique en ligne sans rien oublier.' },
+        { id: 'etapes', kind: 'textarea', label: 'Liste les grandes étapes', hint: 'Une par ligne — je structure le reste.', ph: 'Étape…\nÉtape…\nÉtape…' },
+        { id: 'sections', kind: 'text', label: 'Des catégories à regrouper ?', hint: 'Optionnel.', ph: 'Ex : Avant / Pendant / Après' },
+        { id: 'detail', kind: 'chips', label: 'Niveau de détail ?', options: ['Synthétique', 'Détaillé'] },
+      ],
+      sales: [
+        { id: 'offre', kind: 'textarea', label: 'Décris ton offre / ce que tu vends', ph: 'Ce que contient ton produit, son format…' },
+        { id: 'prix', kind: 'text', label: 'Quel prix ?', ph: 'Ex : 47 €, 97 €, 3 x 30 €…' },
+        { id: 'promesse', kind: 'textarea', label: 'La transformation / promesse principale', ph: 'Ce que ta cliente obtient grâce à toi.' },
+        { id: 'objections', kind: 'textarea', label: 'Quels freins ou objections lever ?', hint: 'Ce qui empêche d\'acheter.', ph: 'Ex : « je n\'ai pas le temps », « c\'est trop technique »…' },
+        { id: 'bonus', kind: 'text', label: 'Des bonus inclus ?', hint: 'Optionnel.', ph: 'Ex : un template offert, un appel…' },
+      ],
+      quiz: [
+        { id: 'but', kind: 'textarea', label: 'Que veux-tu révéler ou orienter ?', ph: 'Ex : quel type de routine beauté lui convient.' },
+        { id: 'resultats', kind: 'textarea', label: 'Quels profils / résultats possibles ?', hint: 'Une par ligne.', ph: 'Profil A…\nProfil B…\nProfil C…' },
+        { id: 'nb', kind: 'chips', label: 'Combien de questions ?', options: ['5', '8', '12'] },
+        { id: 'theme', kind: 'text', label: 'Le thème des questions ?', ph: 'Ex : habitudes du matin, budget, énergie…' },
+      ],
+      offer: [
+        { id: 'offre', kind: 'textarea', label: 'Décris ce que contient cette offre', ph: 'Modules, accès, durée, ce qui est inclus…' },
+        { id: 'prix', kind: 'text', label: 'Quel prix ?', ph: 'Ex : 197 €, 29 €/mois…' },
+        { id: 'promesse', kind: 'textarea', label: 'La promesse principale', ph: 'Le grand bénéfice pour ta cliente.' },
+        { id: 'format', kind: 'text', label: 'Format / durée ?', ph: 'Ex : live 2h + replay, accès illimité…' },
+      ],
+    };
+    return sets[fam] || sets.workbook;
+  }
+
+  // ---------- navigation ----------
+  goStep2() { if (!this.state.answers.type) return; this.setState({ step: 2 }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  backTo1() { this.setState({ step: 1 }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  reset() { this.setState({ step: 1, answers: { type: null, niche: null, nicheAutre: '', objectif: null, ton: null, audience: '', avatarSituation: '', avatarDefi: '', avatarDesir: '', avatarBlocage: '', avatarAge: null }, detail: {}, esquisse: '', brand: { name: '', slogan: '', color: '', colorText: '' }, product: null, refine: '', copied: false, showLimit: false, fileStatus: '', assistInput: '', assistReply: '' }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  // ---------- generation ----------
+  buildContext() {
+    const a = this.state.answers, d = this.state.detail;
+    let ctx = `Type : ${a.type}\nUnivers : ${this.effectiveNiche() || 'non précisé'}\nObjectif : ${a.objectif || 'non précisé'}\nTon : ${a.ton || 'chaleureux'}\n`;
+    ctx += `\nAVATAR CLIENT (la personne à qui ce produit s'adresse — parle-lui directement, réponds à ses besoins) :\n`;
+    ctx += `- Qui est-elle : ${a.audience || 'entrepreneures débutantes'}\n`;
+    if (a.avatarSituation && a.avatarSituation.trim()) ctx += `- Où elle en est : ${a.avatarSituation.trim()}\n`;
+    if (a.avatarDefi && a.avatarDefi.trim()) ctx += `- Son plus gros défi : ${a.avatarDefi.trim()}\n`;
+    if (a.avatarDesir && a.avatarDesir.trim()) ctx += `- Ce qu'elle désire vraiment : ${a.avatarDesir.trim()}\n`;
+    if (a.avatarBlocage && a.avatarBlocage.trim()) ctx += `- Ce qui l'a freinée jusqu'ici : ${a.avatarBlocage.trim()}\n`;
+    if (a.avatarAge) ctx += `- Tranche d'âge : ${a.avatarAge}\n`;
+    ctx += `\n`;
+    this.questionSet().forEach(q => { if (d[q.id]) ctx += `${q.label} → ${d[q.id]}\n`; });
+    const br = this.state.brand;
+    if ((br.name && br.name.trim()) || (br.slogan && br.slogan.trim()) || br.color) {
+      ctx += `\nBRANDING DE LA CLIENTE (utilise-le : intègre le nom de marque dans le produit, reprends le slogan, et adopte cette identité) :\n`;
+      if (br.name && br.name.trim()) ctx += `- Nom de marque : ${br.name.trim()}\n`;
+      if (br.slogan && br.slogan.trim()) ctx += `- Slogan / signature : ${br.slogan.trim()}\n`;
+      if (br.color) ctx += `- Couleur principale de la marque : ${br.color}\n`;
+    }
+    if (this.state.esquisse && this.state.esquisse.trim()) ctx += `\nESQUISSE / TRAVAIL DÉJÀ COMMENCÉ par la cliente (à respecter et enrichir, ne pas ignorer) :\n"""${this.state.esquisse.trim()}"""\n`;
+    return ctx;
+  }
+
+  blockSchemaHint() {
+    const fam = this.family();
+    const guides = {
+      workbook: 'Rends le produit VRAIMENT INTERACTIF (pas un simple texte à lire) : commence par un bloc "intro", puis ALTERNE des "section" (contenu rédigé avec points) avec des blocs où la cliente AGIT — au moins 2 "exercice" (champs à remplir) et 1 "checklist" (cases à cocher / passage à l\'action). Même pour un guide ou un ebook : intègre des encadrés à remplir, des questions de réflexion et une checklist récapitulative. Termine par un "cta".',
+      tracker: 'Utilise un bloc "intro" court, puis UN bloc "tracker" (colonnes = ce qu\'elle note chaque fois : ce peut être une croix, un chiffre OU un mot ; lignes = jours ou items à suivre), puis une "section" de conseils. Les cellules sont vierges, à remplir à la main.',
+      calculator: 'Utilise un bloc "intro" court, puis UN bloc "saisie" (champs = les valeurs NUMÉRIQUES à entrer une par une, dans l\'ordre ; resultat = le libellé du résultat affiché en bas ; formule = OBLIGATOIRE : une expression arithmétique JavaScript valide utilisant c0, c1, c2… pour référencer les champs dans l\'ordre exact — ex. pour un tarif horaire à partir de [charges mensuelles, salaire visé, heures par mois] : "(c0+c1)/c2"). N\'utilise que + - * / ( ) et les c0,c1,… ; pas de texte. Puis une "section" expliquant comment lire le résultat.',
+      checklist: 'Utilise un bloc "intro" court puis 1 à 3 blocs "checklist" (items = cases à cocher, regroupés par catégorie si pertinent). Termine par un "cta".',
+      sales: 'Structure une page de vente : "intro" (accroche + promesse), "section" (bénéfices en points), "section" (lever les objections), éventuellement "citation" (témoignage type), puis "cta" (bouton d\'achat).',
+      quiz: 'Utilise "intro" (le but du quiz), "section" listant les profils/résultats, "exercice" présentant 2-3 exemples de questions, puis "cta".',
+      offer: 'Utilise "intro" (l\'offre + promesse), "section" (ce qui est inclus, en points), "citation" optionnelle, puis "cta".',
+    };
+    return guides[fam] || guides.workbook;
+  }
+
+  async generate(mode) {
+    if (this.isPreviewEnv() && this.usageCount() >= this.usageLimit()) {
+      this.setState({ showLimit: true });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (mode !== 'refine') this.clearFills();
+    this.setState({ loading: true, loadingMode: mode, copied: false });
+    let i = 0; this._timer = setInterval(() => { i = (i + 1) % this.LOAD_MSGS.length; this.setState({ loadMsg: i }); }, 1500);
+
+    let prompt;
+    if (mode === 'refine' && this.state.product) {
+      prompt = `Tu es une experte en création de produits numériques premium. Voici un produit déjà conçu (JSON) :
+${JSON.stringify(this.state.product)}
+
+Demande de modification de la cliente : "${this.state.refine}"
+
+Applique cette demande et renvoie le PRODUIT COMPLET mis à jour, STRICTEMENT au même schéma JSON, sans aucun texte autour, sans balises markdown. Garde ce qui n'est pas concerné par la demande. Reste concis.`;
+    } else {
+      prompt = `Tu es une experte en création de produits numériques premium pour entrepreneures (souvent des mamans). À partir des informations ci-dessous, conçois UN produit complet, rédigé, désirable et prêt à l'emploi (pas un simple plan : écris les vrais textes).
+
+${this.buildContext()}
+
+Consigne de structure : ${this.blockSchemaHint()}
+
+INTERACTIVITÉ (priorité absolue) : ce studio crée des produits numériques INTERACTIFS. Dès que c'est pertinent, ajoute des éléments où la cliente AGIT — champs "exercice" à remplir, "checklist" à cocher, "tracker" à compléter, "saisie"+formule à calculer. Évite un produit 100% texte à lire ; vise au moins 2 blocs interactifs.
+
+Réponds UNIQUEMENT avec un objet JSON valide (aucun texte avant/après, pas de markdown), schéma EXACT :
+{"titre":string,"sousTitre":string,"promesse":string,"format":string,"prix":string,"blocs":[{"type":"intro|section|exercice|checklist|tracker|saisie|cta|citation","titre":string,"texte":string,"points":[string],"items":[string],"champs":[string],"colonnes":[string],"lignes":[string],"resultat":string,"formule":string,"bouton":string}]}
+
+Règles : n'inclus dans chaque bloc QUE les champs utiles à son type (les autres = omis ou vides). 4 à 6 blocs maximum. Textes concis (max ~35 mots par "texte", max ~10 mots par point/item). Tout en français, ton ${this.state.answers.ton || 'chaleureux'}. Si une esquisse est fournie, intègre-la vraiment.`;
+    }
+
+    let product, ok = false, limitHit = false;
+    try {
+      const raw = await this.callClaude(prompt);
+      product = { ...this._parse(raw), _ai: true };
+      ok = true;
+    } catch (e) {
+      if (e && e.code === 'limit') limitHit = true;
+      else product = (mode === 'refine' && this.state.product) ? this.state.product : { ...this._fallback(), _ai: false };
+    }
+    clearInterval(this._timer);
+    if (limitHit) {
+      this.setState({ loading: false, showLimit: true });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (ok && this.isPreviewEnv()) this.incUsage();
+    this.setState({ loading: false, step: 3, product, refine: '' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  _parse(raw) {
+    let t = String(raw).trim().replace(/```json/gi, '').replace(/```/g, '');
+    const s = t.indexOf('{');
+    if (s >= 0) t = t.slice(s);
+    const e = t.lastIndexOf('}');
+    let body = (e > 0) ? t.slice(0, e + 1) : t;
+    let o = this._tryJson(body);
+    if (!o) o = this._tryJson(this._closeJson(t));   // récupère un JSON tronqué
+    if (!o || !o.blocs || !Array.isArray(o.blocs)) throw new Error('bad');
+    return o;
+  }
+
+  _tryJson(str) { try { return JSON.parse(str); } catch (e) { return null; } }
+
+  // Referme un JSON coupé : garde les blocs complets, ferme les structures ouvertes.
+  _closeJson(t) {
+    let inStr = false, esc = false, last = -1;
+    for (let i = 0; i < t.length; i++) {
+      const c = t[i];
+      if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; continue; }
+      if (c === '"') { inStr = true; continue; }
+      if (c === '}') last = i;
+    }
+    if (last < 0) return t;
+    let u = t.slice(0, last + 1);
+    inStr = false; esc = false; const stack = [];
+    for (let i = 0; i < u.length; i++) {
+      const c = u[i];
+      if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; continue; }
+      if (c === '"') { inStr = true; continue; }
+      if (c === '{') stack.push('}'); else if (c === '[') stack.push(']');
+      else if (c === '}' || c === ']') stack.pop();
+    }
+    u = u.replace(/,\s*$/, '');
+    while (stack.length) u += stack.pop();
+    return u;
+  }
+
+  _fallback() {
+    const a = this.state.answers, fam = this.family();
+    const niche = this.effectiveNiche() || 'ton sujet';
+    const base = { titre: `${this.typeLabel()} : ${niche}`, sousTitre: `Un ${this.typeLabel().toLowerCase()} pensé pour ${a.audience || 'ta cliente idéale'}, ton ${(a.ton || 'chaleureux').toLowerCase()}.`, promesse: 'Un résultat concret, vite', format: a.type || 'Produit numérique', prix: a.objectif && a.objectif.indexOf('Attirer') === 0 ? 'Gratuit' : '47 € – 97 €' };
+    const blocsByFam = {
+      tracker: [
+        { type: 'intro', titre: 'Bienvenue', texte: 'Coche chaque jour, observe tes progrès, célèbre tes victoires.' },
+        { type: 'tracker', titre: 'Mon suivi', colonnes: ['L', 'M', 'M', 'J', 'V', 'S', 'D'], lignes: ['Habitude 1', 'Habitude 2', 'Habitude 3', 'Habitude 4'] },
+        { type: 'section', titre: 'Mes conseils', points: ['Commence petit, sois régulière', 'Une case cochée = une victoire'] },
+      ],
+      checklist: [
+        { type: 'intro', titre: 'Ta feuille de route', texte: 'Avance étape par étape, sans rien oublier.' },
+        { type: 'checklist', titre: 'À faire', items: ['Première étape', 'Deuxième étape', 'Troisième étape', 'Quatrième étape'] },
+        { type: 'cta', titre: 'Prête à passer à l\'action ?', texte: 'Coche ta première case dès aujourd\'hui.', bouton: 'Je commence' },
+      ],
+      sales: [
+        { type: 'intro', titre: 'La promesse', texte: 'Imagine le résultat que tu obtiendras grâce à cette offre.' },
+        { type: 'section', titre: 'Ce que tu obtiens', points: ['Un bénéfice clair', 'Un deuxième bénéfice', 'Un troisième bénéfice'] },
+        { type: 'section', titre: 'Et si tu hésites…', points: ['On lève ton objection principale', 'On te rassure sur le temps / le niveau'] },
+        { type: 'cta', titre: 'Rejoins-nous', texte: 'Une offre pensée pour toi.', bouton: 'Je m\'inscris' },
+      ],
+    };
+    const generic = [
+      { type: 'intro', titre: 'Bienvenue & promesse', texte: 'Présente en une phrase le résultat visé et rassure ta cliente.' },
+      { type: 'section', titre: 'Le cœur du produit', points: ['Étape guidée 1', 'Étape guidée 2', 'Étape guidée 3'] },
+      { type: 'exercice', titre: 'À toi de jouer', texte: 'Un exercice concret à compléter.', champs: ['Ma situation aujourd\'hui', 'Mon premier pas'] },
+      { type: 'cta', titre: 'Pour aller plus loin', texte: 'Une invitation vers ton offre suivante.', bouton: 'Continuer' },
+    ];
+    return { ...base, blocs: blocsByFam[fam] || generic };
+  }
+
+  // ---------- copy ----------
+  _toText(p) {
+    let t = `${p.titre}\n${p.sousTitre}\n`;
+    if (p.promesse) t += `Promesse : ${p.promesse}\n`;
+    if (p.prix) t += `Prix : ${p.prix}\n`;
+    t += `\n`;
+    (p.blocs || []).forEach(b => {
+      if (b.titre) t += `── ${b.titre} ──\n`;
+      if (b.texte) t += `${b.texte}\n`;
+      (b.points || []).forEach(x => t += `• ${x}\n`);
+      (b.items || []).forEach(x => t += `☐ ${x}\n`);
+      (b.champs || []).forEach(x => t += `${x} : _______________\n`);
+      if (b.colonnes && b.colonnes.length) t += `Colonnes : ${b.colonnes.join(' | ')}\n`;
+      (b.lignes || []).forEach(x => t += `${x}\n`);
+      if (b.bouton) t += `[ ${b.bouton} ]\n`;
+      t += `\n`;
+    });
+    return t.trim();
+  }
+  copyProduct() { const p = this.state.product; if (!p) return; try { navigator.clipboard.writeText(this._toText(p)); } catch (e) {} this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 2200); }
+
+  // ---------- export (PDF imprimable + .html interactif, sans marque) ----------
+  _shade(hex, pct) {
+    try {
+      let h = String(hex).replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join('');
+      const n = parseInt(h, 16); let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      const f = (v) => Math.max(0, Math.min(255, Math.round(v + (pct < 0 ? v * pct : (255 - v) * pct))));
+      return '#' + [f(r), f(g), f(b)].map(v => v.toString(16).padStart(2, '0')).join('');
+    } catch (e) { return hex; }
+  }
+  brandColor() { return (this.state.brand && this.state.brand.color) || '#8c52ff'; }
+  heroGradient() { const c = this.brandColor(); return `linear-gradient(155deg,${c},${this._shade(c, 0.22)})`; }
+  heroStyle() { return `background:${this.heroGradient()};color:#fff;padding:48px 52px;`; }
+  _esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  _champLabel(c) { return typeof c === 'string' ? c : (c && c.label) || ''; }
+  _slug(s) { return (String(s || 'mon-produit').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'mon-produit').slice(0, 50); }
+
+  _blocHTML(b, idx) {
+    const e = this._esc.bind(this), t = b.type || 'section', wrap = (x) => `<div class="bloc" style="break-inside:avoid;">${x}</div>`;
+    if (t === 'intro' || t === 'section') {
+      let h = `<h3 style="font-size:24px;font-weight:700;margin-bottom:12px;">${e(b.titre)}</h3>`;
+      if (b.texte) h += `<p style="font-size:17px;line-height:1.6;color:#4a4458;">${e(b.texte)}</p>`;
+      if (b.points && b.points.length) h += `<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">` + b.points.map(x => `<div style="display:flex;gap:10px;font-size:16px;color:#4a4458;line-height:1.5;"><span style="color:#8c52ff;font-weight:700;">&rsaquo;</span><span>${e(x)}</span></div>`).join('') + `</div>`;
+      return wrap(h);
+    }
+    if (t === 'exercice') {
+      const f = (b.champs || []).map((c, j) => `<div style="margin-top:14px;"><div style="font-size:14px;font-weight:600;color:#5b5667;margin-bottom:6px;">${e(this._champLabel(c))}</div><textarea data-k="e${idx}_${j}" rows="2" style="width:100%;border:1.5px solid #ECE7F2;border-radius:12px;padding:12px 14px;font-size:15px;min-height:54px;resize:vertical;font-family:inherit;"></textarea></div>`).join('');
+      return wrap(`<div style="border:2px dashed #d9c6ff;border-radius:18px;padding:24px 26px;background:#FCFAFF;"><h3 style="font-size:21px;font-weight:700;">&#9997; ${e(b.titre)}</h3>${b.texte ? `<p style="font-size:15px;color:#6b6480;margin-top:6px;">${e(b.texte)}</p>` : ''}${f}</div>`);
+    }
+    if (t === 'checklist') {
+      const it = (b.items || []).map((x, j) => `<label style="display:flex;gap:12px;align-items:center;background:#FCFAFF;border:1px solid #F0EBF7;border-radius:13px;padding:14px 16px;cursor:pointer;"><input type="checkbox" data-k="c${idx}_${j}" style="width:22px;height:22px;accent-color:#8c52ff;flex:none;"><span style="font-size:16px;color:#3a3548;">${e(x)}</span></label>`).join('');
+      return wrap(`<h3 style="font-size:24px;font-weight:700;margin-bottom:14px;">${e(b.titre)}</h3><div style="display:flex;flex-direction:column;gap:10px;">${it}</div>`);
+    }
+    if (t === 'tracker') {
+      const cols = (b.colonnes && b.colonnes.length) ? b.colonnes : ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+      const g = `grid-template-columns:1.4fr repeat(${cols.length},1fr)`;
+      const head = `<div style="display:grid;${g};background:#F4EEFF;"><div style="padding:12px 14px;font-size:13px;font-weight:700;color:#7a3fe0;">Suivi</div>` + cols.map(c => `<div style="padding:12px 4px;font-size:12px;font-weight:700;color:#7a3fe0;text-align:center;border-left:1px solid #e6d8ff;">${e(c)}</div>`).join('') + `</div>`;
+      const rows = (b.lignes || []).map((l, r) => `<div style="display:grid;${g};border-top:1px solid #F0EBF7;"><div style="padding:12px 14px;font-size:15px;color:#3a3548;">${e(l)}</div>` + cols.map((_, c) => `<div style="border-left:1px solid #F0EBF7;display:flex;align-items:center;justify-content:center;min-height:42px;"><input type="checkbox" data-k="t${idx}_${r}_${c}" style="width:18px;height:18px;accent-color:#8c52ff;"></div>`).join('') + `</div>`).join('');
+      return wrap(`<h3 style="font-size:24px;font-weight:700;margin-bottom:14px;">&#128202; ${e(b.titre)}</h3><div style="border:1px solid #EEE7F7;border-radius:16px;overflow:hidden;">${head}${rows}</div>`);
+    }
+    if (t === 'saisie') {
+      const f = (b.champs || []).map((c, j) => `<div style="display:flex;align-items:center;gap:14px;margin-top:10px;"><div style="flex:1;font-size:15px;color:#3a3548;">${e(this._champLabel(c))}</div><input type="number" class="sai" data-block="${idx}" data-idx="${j}" data-k="s${idx}_${j}" style="width:150px;border:1.5px solid #ECE7F2;border-radius:10px;min-height:44px;padding:0 14px;font-size:16px;text-align:right;font-family:inherit;"></div>`).join('');
+      const hasF = !!(b.formule && String(b.formule).trim());
+      let res = '';
+      if (b.resultat) {
+        const inner = hasF ? `<div class="resval" style="font-size:24px;font-weight:800;">&mdash;</div>` : `<input data-k="r${idx}" style="width:120px;background:rgba(255,255,255,.14);border:1.5px dashed rgba(255,255,255,.5);border-radius:9px;min-height:36px;color:#fff;text-align:right;padding:0 12px;font-weight:700;font-family:inherit;">`;
+        res = `<div ${hasF ? `data-formula="${e(b.formule)}" data-block="${idx}"` : ''} style="margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#8c52ff;color:#fff;border-radius:12px;padding:16px 22px;"><div style="font-size:16px;font-weight:600;">${e(b.resultat)}</div>${inner}</div>`;
+      }
+      return wrap(`<div style="border:1px solid #EEE7F7;border-radius:18px;overflow:hidden;"><div style="background:#F4EEFF;padding:16px 24px;"><h3 style="font-size:21px;font-weight:700;">&#129518; ${e(b.titre)}</h3></div><div style="padding:22px 24px;">${b.texte ? `<p style="font-size:15px;color:#6b6480;margin-bottom:12px;">${e(b.texte)}</p>` : ''}${f}${res}</div></div>`);
+    }
+    if (t === 'cta') return wrap(`<div style="background:#2A2336;border-radius:18px;padding:30px 32px;text-align:center;"><h3 style="font-size:23px;font-weight:700;color:#fff;">${e(b.titre)}</h3>${b.texte ? `<p style="font-size:16px;color:#cdbdf0;margin-top:8px;">${e(b.texte)}</p>` : ''}<div style="display:inline-block;margin-top:16px;background:#8c52ff;color:#fff;font-weight:700;font-size:17px;padding:13px 30px;border-radius:12px;">${e(b.bouton || 'En savoir plus')}</div></div>`);
+    if (t === 'citation') return wrap(`<div style="border-left:4px solid #8c52ff;padding-left:22px;"><p style="font-style:italic;font-size:22px;line-height:1.4;color:#5b5667;font-family:'Newsreader',serif;">${e(b.texte)}</p></div>`);
+    return '';
+  }
+
+  _fullDoc(p, forPrint) {
+    const e = this._esc.bind(this);
+    const accent = this.brandColor();
+    const br = this.state.brand || {};
+    const blocs = (p.blocs || []).map((b, i) => this._blocHTML(b, i)).join('');
+    const printCss = forPrint ? `@page{margin:12mm;} @media print{ body{padding:0;background:#fff;} .wrap{box-shadow:none;border:none;border-radius:0;} }` : '';
+    const calcScript = `(function(){function rc(){var L=document.querySelectorAll('[data-formula]');for(var n=0;n<L.length;n++){(function(res){var blk=res.getAttribute('data-block');var ins=[].slice.call(document.querySelectorAll('input.sai[data-block="'+blk+'"]'));ins.sort(function(a,b){return a.getAttribute('data-idx')-b.getAttribute('data-idx');});var vals=ins.map(function(i){return parseFloat(i.value)||0;});try{var names=vals.map(function(_,k){return 'c'+k;});var f=Function.apply(null,names.concat(['return ('+res.getAttribute('data-formula')+')']));var r=f.apply(null,vals);var out=res.querySelector('.resval');var any=ins.some(function(i){return String(i.value).trim()!=='';});if(out)out.textContent=(!any||!isFinite(r))?'\\u2014':new Intl.NumberFormat('fr-FR',{maximumFractionDigits:2}).format(Math.round(r*100)/100);}catch(ex){}})(L[n]);}}document.addEventListener('input',rc);rc();})();`;
+    const persistScript = forPrint ? '' : `(function(){var KEY='produit_'+document.title;function save(){var d={};var els=document.querySelectorAll('[data-k]');for(var i=0;i<els.length;i++){var el=els[i];d[el.getAttribute('data-k')]=el.type==='checkbox'?el.checked:el.value;}try{localStorage.setItem(KEY,JSON.stringify(d));}catch(ex){}}function load(){try{var d=JSON.parse(localStorage.getItem(KEY)||'{}');var els=document.querySelectorAll('[data-k]');for(var i=0;i<els.length;i++){var el=els[i];var k=el.getAttribute('data-k');if(k in d){if(el.type==='checkbox')el.checked=d[k];else el.value=d[k];}}}catch(ex){}}load();document.addEventListener('input',save);document.addEventListener('change',save);})();`;
+    const printScript = forPrint ? `window.onload=function(){setTimeout(function(){window.print();},350);};` : '';
+    const head = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(p.titre)}</title><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Newsreader:ital@0;1&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Poppins',sans-serif;color:#2E2A36;background:#FBFAFF;padding:32px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.wrap{max-width:820px;margin:0 auto;background:#fff;border:1px solid #EEE7F7;border-radius:24px;overflow:hidden;box-shadow:0 16px 60px rgba(140,82,255,.12);}.hero{background:${this.heroGradient()};color:#fff;padding:44px 48px;}.body{padding:40px 48px;display:flex;flex-direction:column;gap:32px;}${printCss}</style></head>`;
+    const brandLine = (br.name && br.name.trim()) ? `<div style="font-size:14px;font-weight:700;letter-spacing:.04em;opacity:.95;margin-bottom:10px;">${e(br.name.trim())}</div>` : '';
+    const sloganLine = (br.slogan && br.slogan.trim()) ? `<div style="font-size:14px;font-style:italic;opacity:.9;margin-top:12px;">&laquo; ${e(br.slogan.trim())} &raquo;</div>` : '';
+    const body = `<body><div class="wrap"><div class="hero">${brandLine}<div style="font-size:13px;font-weight:600;letter-spacing:.18em;opacity:.85;text-transform:uppercase;margin-bottom:12px;">${e(p.format || '')}</div><h1 style="font-size:38px;line-height:1.08;font-weight:800;">${e(p.titre)}</h1>${p.sousTitre ? `<p style="font-family:'Newsreader',serif;font-size:21px;line-height:1.4;margin-top:12px;opacity:.96;">${e(p.sousTitre)}</p>` : ''}${sloganLine}<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;">${p.promesse ? `<span style="background:rgba(255,255,255,.18);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;">&#10022; ${e(p.promesse)}</span>` : ''}${p.prix ? `<span style="background:rgba(255,255,255,.18);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;">${e(p.prix)}</span>` : ''}</div></div><div class="body">${blocs}</div></div>`;
+    const script = `<scr` + `ipt>${persistScript}${calcScript}${printScript}</scr` + `ipt>`;
+    return head + body + script + `</body></html>`;
+  }
+
+  downloadHTML() {
+    const p = this.state.product; if (!p) return;
+    const blob = new Blob([this._fullDoc(p, false)], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = this._slug(p.titre) + '.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  downloadPDF() {
+    const p = this.state.product; if (!p) return;
+    const w = window.open('', '_blank');
+    if (!w) { alert('Autorise les fenêtres pop-up pour télécharger le PDF (puis « Enregistrer en PDF »).'); return; }
+    w.document.open(); w.document.write(this._fullDoc(p, true)); w.document.close();
+  }
+
+  // ---------- render ----------
+  normBlock(b, idx, proseCounter) {
+    const type = b.type || 'section';
+    const F = this.state.fills;
+    const champs = (b.champs || []).map(c => typeof c === 'string' ? c : (c && c.label) || '');
+    const colonnes = b.colonnes || [];
+    const lignes = b.lignes || [];
+    const cols = colonnes.length || 5;
+
+    // checklist : cases réellement cochables
+    const items = (b.items || []).map((label, j) => {
+      const key = 'c' + idx + '_' + j; const on = !!F[key];
+      return {
+        label, onToggle: () => this.toggleFill(key),
+        rowStyle: 'display:flex;gap:13px;align-items:center;border-radius:13px;padding:15px 18px;cursor:pointer;transition:all .15s;border:1px solid ' + (on ? '#d9c6ff' : '#F0EBF7') + ';background:' + (on ? '#F4EEFF' : '#FCFAFF') + ';',
+        boxStyle: 'width:24px;height:24px;border-radius:7px;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;transition:all .15s;border:2px solid ' + (on ? '#8c52ff' : '#c6a8ff') + ';background:' + (on ? '#8c52ff' : '#fff') + ';color:#fff;',
+        mark: on ? '✓' : '',
+        labelStyle: 'font-size:17px;transition:all .15s;' + (on ? 'color:#7a3fe0;text-decoration:line-through;opacity:.7;' : 'color:#3a3548;'),
+      };
+    });
+
+    // tracker : cellules cliquables (vide → ✓)
+    const rows = lignes.map((l, r) => ({
+      label: l,
+      cells: Array.from({ length: cols }, (_, c) => {
+        const key = 't' + idx + '_' + r + '_' + c; const on = !!F[key];
+        return {
+          mark: on ? '✓' : '', onToggle: () => this.toggleFill(key),
+          style: 'border-left:1px solid #F0EBF7;min-height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;font-weight:700;transition:all .15s;background:' + (on ? '#F4EEFF' : '#fff') + ';color:' + (on ? '#7a3fe0' : 'transparent') + ';',
+        };
+      }),
+    }));
+
+    // exercice : vrais champs de saisie
+    const exFields = champs.map((label, j) => {
+      const key = 'e' + idx + '_' + j;
+      return { label, value: F[key] || '', onInput: (e) => this.setFill(key, e.target.value) };
+    });
+
+    // saisie / calculateur : vrais champs numériques + résultat calculé
+    const saiVals = champs.map((_, j) => F['s' + idx + '_' + j] || '');
+    const saiFields = champs.map((label, j) => {
+      const key = 's' + idx + '_' + j;
+      return { label, value: F[key] || '', onInput: (e) => this.setFill(key, e.target.value) };
+    });
+    const hasFormule = !!(b.formule && String(b.formule).trim());
+    let resultValue = '', resultEditable = false, onResultInput = null;
+    if (hasFormule) {
+      const r = this.computeFormula(b.formule, saiVals);
+      const anyFilled = saiVals.some(v => String(v).trim() !== '');
+      resultValue = (r == null || !anyFilled) ? '—' : this.fmtNum(r);
+    } else {
+      resultEditable = true;
+      const key = 'r' + idx; resultValue = F[key] || '';
+      onResultInput = (e) => this.setFill(key, e.target.value);
+    }
+
+    return {
+      isProse: type === 'intro' || type === 'section',
+      isExercice: type === 'exercice',
+      isChecklist: type === 'checklist',
+      isTracker: type === 'tracker',
+      isSaisie: type === 'saisie',
+      isCta: type === 'cta',
+      isQuote: type === 'citation',
+      hasNum: type === 'section',
+      num: proseCounter,
+      titre: b.titre || '',
+      texte: b.texte || '',
+      hasTexte: !!(b.texte && b.texte.trim()),
+      points: b.points || [],
+      hasPoints: !!(b.points && b.points.length),
+      items,
+      exFields,
+      saiFields,
+      resultat: b.resultat || '',
+      hasResultat: !!(b.resultat && b.resultat.trim()),
+      resultValue, resultEditable, resultComputed: !resultEditable, onResultInput,
+      bouton: b.bouton || 'En savoir plus',
+      header: colonnes,
+      rowLabel: 'Mon suivi',
+      rows,
+      gridStyle: `grid-template-columns:1.4fr repeat(${cols},1fr)`,
+    };
+  }
+
+  renderVals() {
+    const st = this.state, a = st.answers;
+    const stepNames = ['Tes choix', 'Précisions', 'Ton produit'];
+    const steps = stepNames.map((label, i) => {
+      const n = i + 1, active = st.step === n, done = st.step > n;
+      return {
+        num: done ? '✓' : String(n), label,
+        showBar: i < 2,
+        dotStyle: `width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;transition:all .2s;${active ? 'background:#8c52ff;color:#fff;' : done ? 'background:#d9c6ff;color:#7a3fe0;' : 'background:#F0EBF7;color:#b3acc2;'}`,
+        labelStyle: `font-size:14px;font-weight:600;${active ? 'color:#2E2A36;' : 'color:#b3acc2;'}`,
+      };
+    });
+
+    // step 2 questions
+    const qset = this.questionSet();
+    const detailQuestions = qset.map((q, i) => {
+      const val = st.detail[q.id];
+      return {
+        num: i + 1, label: q.label, hint: q.hint || '', hasHint: !!q.hint, placeholder: q.ph || '',
+        isTextarea: q.kind === 'textarea', isText: q.kind === 'text', isChips: q.kind === 'chips',
+        onInput: (e) => this.setDetail(q.id, e.target.value),
+        options: (q.options || []).map(o => ({ label: o, style: this.chipStyle(val === o), onSelect: () => this.setDetail(q.id, o) })),
+      };
+    });
+
+    // step 3 product
+    const p = st.product || {};
+    let pc = 0;
+    const blocks = (p.blocs || []).map((b, i) => { if ((b.type || 'section') === 'section') pc += 1; return this.normBlock(b, i, pc); });
+
+    const suggestionLabels = ['Rends le ton plus chaleureux', 'Raccourcis le tout', 'Ajoute une section', 'Plus d\'exemples concrets', 'Rends-le plus premium'];
+    const suggestions = suggestionLabels.map(l => ({ label: l, onClick: () => { this.state.refine = (this.state.refine ? this.state.refine + ' ' : '') + l + '.'; this.generate('refine'); } }));
+
+    const headerByStep = {
+      1: { t: 'Créons ton produit numérique sur-mesure et interactif', s: 'Réponds à quelques questions. Je conçois pour toi un vrai produit, mis en page et prêt à l\'emploi.' },
+      2: { t: `Parlons précisément de ton ${this.typeLabel().toLowerCase()}`, s: 'Ces détails me permettent de créer un produit vraiment personnalisé — à ton univers, ton expertise, tes données.' },
+      3: { t: 'Voici ton produit', s: 'Un premier jet mis en page, rien que pour toi. Maintenant, retravaillons-le ensemble jusqu\'à ce qu\'il soit parfait.' },
+    };
+    const h = headerByStep[st.step] || headerByStep[1];
+
+    const can = !!a.type;
+    const left = this.remainingNow();
+
+    return {
+      steps,
+      headerTitle: h.t, headerSub: h.s,
+      counterText: `Il te reste ${left} création${left > 1 ? 's' : ''}`,
+      showResetCounter: this.isPreviewEnv(),
+      onResetCounter: () => this.resetUsage(),
+      showCounter: !!st.email,
+      isEmailGate: !st.email && !st.showLimit,
+      emailValue: st.emailInput,
+      onEmailInput: (e) => this.onEmailInput(e),
+      onEmailSubmit: () => this.submitEmail(),
+      emailError: st.emailError,
+      hasEmailError: !!st.emailError,
+      emailBtnLabel: st.emailChecking ? 'Un instant…' : 'Commencer à créer',
+      isLimit: st.showLimit,
+      limitTotal: this.isPreviewEnv() ? this.usageLimit() : (st.serverLimit || this.usageLimit()),
+      limitCtaUrl: (this.props && this.props.contactUrl) || '#',
+      isStep1: st.step === 1 && !st.loading && !st.showLimit && !!st.email,
+      isStep2: st.step === 2 && !st.loading && !st.showLimit,
+      isLoading: st.loading,
+      isProduct: st.step === 3 && !st.loading && !!st.product && !st.showLimit,
+
+      // step 1
+      typeList: this.TYPES.map(o => ({ ...o, style: this.optStyle(a.type === o.value), onSelect: () => this.select('type', o.value) })),
+      nicheList: this.NICHES.map(o => ({ label: o, style: this.chipStyle(a.niche === o), onSelect: () => this.select('niche', o) })),
+      objectifList: this.OBJECTIFS.map(o => ({ ...o, style: this.optStyle(a.objectif === o.value), onSelect: () => this.select('objectif', o.value) })),
+      tonList: this.TONS.map(o => ({ ...o, style: this.tonStyle(a.ton === o.value), onSelect: () => this.select('ton', o.value) })),
+      showNicheAutre: a.niche === 'Autre',
+      onNicheAutreInput: (e) => this.onNicheAutreInput(e),
+      onAudienceInput: (e) => this.onAudienceInput(e),
+      onSituationInput: (e) => this.onSituationInput(e),
+      onDefiInput: (e) => this.onDefiInput(e),
+      onDesirInput: (e) => this.onDesirInput(e),
+      onBlocageInput: (e) => this.onBlocageInput(e),
+      ageList: this.AGES.map(o => ({ label: o, style: this.chipStyle(a.avatarAge === o), onSelect: () => this.select('avatarAge', o) })),
+      onContinue: () => this.goStep2(),
+      continueStyle: `display:inline-flex;align-items:center;gap:10px;background:${can ? '#8c52ff' : '#cdbdf0'};color:#fff;font-weight:700;font-size:21px;padding:19px 46px;border-radius:999px;cursor:${can ? 'pointer' : 'not-allowed'};box-shadow:0 10px 26px rgba(140,82,255,0.32);transition:all .18s;`,
+      continueHint: can ? 'Étape suivante : quelques questions précises sur ton produit.' : 'Choisis au moins un type de produit pour continuer.',
+
+      // step 2
+      step2Intro: `Tu crées un ${this.typeLabel().toLowerCase()} dans l'univers « ${this.effectiveNiche() || 'ton univers'} ». Voici les questions qui vont le rendre unique.`,
+      detailQuestions,
+      onEsquisseInput: (e) => this.onEsquisseInput(e),
+      esquisse: st.esquisse,
+      onFilePick: (e) => this.onFilePick(e),
+      fileBtnLabel: 'Joindre un fichier',
+      fileStatus: st.fileStatus,
+      fileHasStatus: !!st.fileStatus,
+      fileStatusColor: st.fileStatusColor,
+      onAssistInput: (e) => this.onAssistInput(e),
+      assistInput: st.assistInput,
+      assistReply: st.assistReply,
+      assistHasReply: !!st.assistReply,
+      assistBtnLabel: st.assistLoading ? 'Je réfléchis…' : 'Demande mon aide',
+      assistBtnStyle: `background:${st.assistLoading ? '#6b4ba8' : '#8c52ff'};color:#fff;font-weight:700;font-size:15px;padding:13px 22px;border-radius:13px;cursor:${st.assistLoading ? 'default' : 'pointer'};display:inline-flex;align-items:center;gap:8px;white-space:nowrap;`,
+      onAssistAsk: () => this.askAssistant(),
+      onAssistClear: () => this.assistClear(),
+      onAssistInsert: () => this.assistInsert(),
+      assistChips: [
+        { label: '💭 Trouve-moi des idées', onClick: () => this.assistPreset('Propose-moi 5 idées concrètes de contenu pour ce produit.') },
+        { label: '✍️ Aide-moi à formuler', onClick: () => this.assistPreset('Aide-moi à formuler clairement la promesse et le titre de mon produit.') },
+        { label: '📋 Structure mon plan', onClick: () => this.assistPreset('Propose-moi un plan structuré (les grandes parties) pour ce produit.') },
+      ],
+      onBrandNameInput: (e) => this.onBrandNameInput(e),
+      onBrandSloganInput: (e) => this.onBrandSloganInput(e),
+      onBrandColorPick: (e) => this.onBrandColorPick(e),
+      onBrandColorText: (e) => this.onBrandColorText(e),
+      brandColorValue: st.brand.color || '#8c52ff',
+      brandColorText: st.brand.colorText || '',
+      brandColors: this.BRAND_COLORS.map(c => {
+        const on = st.brand.color && st.brand.color.toLowerCase() === c.hex.toLowerCase();
+        return {
+          name: c.name, mark: on ? '✓' : '',
+          onSelect: () => this.selectBrandColor(c.hex),
+          style: `width:38px;height:38px;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;background:${c.hex};box-shadow:${on ? '0 0 0 3px #fff,0 0 0 5px ' + c.hex : '0 2px 6px rgba(0,0,0,0.12)'};transition:transform .12s;`,
+        };
+      }),
+      onBack1: () => this.backTo1(),
+      onCreate: () => this.generate('create'),
+
+      // loading
+      loadingTitle: st.loadingMode === 'refine' ? 'Je retravaille ton produit…' : 'Je conçois ton produit…',
+      currentLoadMsg: (st.loadingMode === 'refine' ? this.REFINE_MSGS : this.LOAD_MSGS)[st.loadMsg % (st.loadingMode === 'refine' ? this.REFINE_MSGS.length : this.LOAD_MSGS.length)],
+
+      // step 3
+      aiBadge: p._ai ? '✦ Créé pour toi' : '✦ Exemple de départ',
+      heroStyle: this.heroStyle(),
+      brandName: st.brand.name || '',
+      hasBrandName: !!(st.brand.name && st.brand.name.trim()),
+      brandSlogan: st.brand.slogan || '',
+      hasBrandSlogan: !!(st.brand.slogan && st.brand.slogan.trim()),
+      p: { ...p, hasPromesse: !!p.promesse, hasPrix: !!p.prix },
+      blocks,
+      suggestions,
+      onRefineInput: (e) => this.onRefineInput(e),
+      onRefine: () => { if (this.state.refine && this.state.refine.trim()) this.generate('refine'); },
+      refineBtnStyle: `background:#8c52ff;color:#fff;font-weight:700;font-size:17px;padding:14px 28px;border-radius:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .15s;`,
+      refineBtnLabel: 'Mettre à jour mon produit',
+      onCopy: () => this.copyProduct(),
+      copyLabel: st.copied ? '✓ Copié !' : '⧉ Copier le texte',
+      onDownloadPdf: () => this.downloadPDF(),
+      onDownloadHtml: () => this.downloadHTML(),
+      showPdf: ['workbook', 'tracker', 'checklist'].includes(this.family()),
+      htmlLabel: this.family() === 'calculator' ? '🖥️ Télécharger mon outil (.html)' : '🖥️ Version interactive (.html)',
+      exportHint: this.family() === 'calculator'
+        ? 'Ton calculateur se télécharge en fichier interactif (.html) : tu l\'ouvres dans ton navigateur et il calcule pour de vrai. C\'est ce fichier que tu peux revendre.'
+        : (['workbook', 'tracker', 'checklist'].includes(this.family())
+            ? 'Le PDF est parfait à imprimer ou utiliser sur tablette. La version interactive (.html) garde les cases à cocher et champs cliquables — idéale à offrir ou revendre en ligne.'
+            : 'Ce format n\'est pas adapté au PDF. Récupère ta version interactive (.html) à ouvrir dans un navigateur, ou copie le texte pour le coller où tu veux.'),
+      onReset: () => this.reset(),
+    };
+  }
+}
+</script>
+</body>
+</html>
