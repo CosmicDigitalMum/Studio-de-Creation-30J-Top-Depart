@@ -11,7 +11,6 @@
 //  studio fonctionne mais SANS limite stricte (utile pour tester).
 // ───────────────────────────────────────────────────────────────────────────
 
-const KV_URL = process.env.KV_REST_API_URL;
 const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const KV_ON = !!(KV_URL && KV_TOKEN);
@@ -49,7 +48,8 @@ export default async function handler(req, res) {
   // 1) Vérification simple du quota (à l'entrée de l'e-mail) — ne consomme rien.
   if (body.check) {
     if (!email) return res.status(400).json({ error: 'E-mail manquant.' });
-    const used = KV_ON ? await kvGet(key) : 0;
+    let used = 0;
+    try { if (KV_ON) used = await kvGet(key); } catch (e) { used = 0; }
     return res.status(200).json({ used, limit, remaining: Math.max(0, limit - used) });
   }
 
@@ -57,17 +57,22 @@ export default async function handler(req, res) {
   const prompt = body.prompt;
   if (!prompt) return res.status(400).json({ error: 'Prompt manquant.' });
 
-  // Quota strict, côté serveur, par e-mail.
-  if (KV_ON && email) {
-    const used = await kvGet(key);
-    if (used >= limit) {
-      return res.status(403).json({ error: 'limit', used, limit, remaining: 0 });
-    }
+  // Quota strict, côté serveur, par e-mail. (Un souci de base ne bloque pas la génération.)
+  // On ne compte / ne bloque QUE les vraies créations (count=true). Les retouches et
+  // l'assistant (count=false) sont gratuits et jamais bloqués.
+  const countable = body.count === true || body.count === 'true';
+  if (countable && KV_ON && email) {
+    try {
+      const used = await kvGet(key);
+      if (used >= limit) {
+        return res.status(403).json({ error: 'limit', used, limit, remaining: 0 });
+      }
+    } catch (e) { /* base indisponible : on laisse passer plutôt que de bloquer */ }
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'Clé API absente côté serveur (ANTHROPIC_API_KEY).' });
-  const model = process.env.ANTHROPIC_MODEL || 'claude-3-5-haiku-latest';
+  const model = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5';
 
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -92,11 +97,13 @@ export default async function handler(req, res) {
 
     const text = (data.content || []).map((b) => b.text || '').join('');
 
-    // On ne décompte qu'une génération RÉUSSIE.
+    // On ne décompte qu'une vraie CRÉATION réussie (count=true).
+    // Les retouches et l'assistant ne consomment rien.
     let remaining = null;
-    if (KV_ON && email) {
-      const nu = await kvIncr(key);
-      remaining = Math.max(0, limit - nu);
+    if (countable && KV_ON && email) {
+      try { const nu = await kvIncr(key); remaining = Math.max(0, limit - nu); } catch (e) { remaining = null; }
+    } else if (KV_ON && email) {
+      try { const used = await kvGet(key); remaining = Math.max(0, limit - used); } catch (e) { remaining = null; }
     }
 
     return res.status(200).json({ text, limit, remaining });
