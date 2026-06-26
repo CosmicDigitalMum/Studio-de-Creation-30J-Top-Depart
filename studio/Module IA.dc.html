@@ -776,7 +776,8 @@ class Component extends DCLogic {
   }
 
   // ---------- appel à Claude (proxy sécurisé en ligne, repli aperçu) ----------
-  async callClaude(prompt) {
+  async callClaude(prompt, opts) {
+    const count = !!(opts && opts.count);
     // Dans l'aperçu Anthropic : connexion intégrée (aucune clé requise).
     if (window.claude && window.claude.complete) {
       return await window.claude.complete({ messages: [{ role: 'user', content: prompt }] });
@@ -785,7 +786,7 @@ class Component extends DCLogic {
     const r = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, email: this.state.email }),
+      body: JSON.stringify({ prompt, email: this.state.email, count }),
     });
     if (r.status === 403) {
       let d = {}; try { d = await r.json(); } catch (e) {}
@@ -932,7 +933,7 @@ Règles : n'inclus dans chaque bloc QUE les champs utiles à son type (les autre
 
     let product, ok = false, limitHit = false;
     try {
-      const raw = await this.callClaude(prompt);
+      const raw = await this.callClaude(prompt, { count: mode !== 'refine' });
       product = { ...this._parse(raw), _ai: true };
       ok = true;
     } catch (e) {
@@ -945,7 +946,7 @@ Règles : n'inclus dans chaque bloc QUE les champs utiles à son type (les autre
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    if (ok && this.isPreviewEnv()) this.incUsage();
+    if (ok && this.isPreviewEnv() && mode !== 'refine') this.incUsage();
     this.setState({ loading: false, step: 3, product, refine: '' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
